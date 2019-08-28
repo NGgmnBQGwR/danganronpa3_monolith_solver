@@ -1,3 +1,4 @@
+#[derive(Debug)]
 pub enum MyError {
     IO(std::io::Error),
     JSON(serde_json::error::Error),
