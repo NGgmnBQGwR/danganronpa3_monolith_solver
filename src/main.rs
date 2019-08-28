@@ -38,7 +38,7 @@ fn generate_monolith_map(image_data: &[u8]) -> Result<MonolithMap, MyError> {
 fn get_monolith_data(image: &PathBuf) -> Result<MonolithMap, MyError> {
     let data_filepath = {
         let mut temp = image.clone();
-        temp.set_extension(".map");
+        temp.set_extension("map");
         temp
     };
     if data_filepath.exists() {
