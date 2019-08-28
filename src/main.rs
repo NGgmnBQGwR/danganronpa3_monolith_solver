@@ -1,22 +1,13 @@
 mod errors;
+mod map;
 
 use std::io::Read;
 use std::path::PathBuf;
 
 use image::GenericImageView;
-use serde::{Deserialize, Serialize};
 
 use errors::MyError;
-
-// type MonolithMap = [[u8; 11]; 21];
-#[derive(Serialize, Deserialize, Debug)]
-struct MonolithMap(pub [[u8; 11]; 21]);
-
-impl Default for MonolithMap {
-    fn default() -> Self {
-        MonolithMap { 0: [[0; 11]; 21] }
-    }
-}
+use map::MonolithMap;
 
 fn get_image_files() -> Vec<PathBuf> {
     let cwd = std::env::current_dir().expect("Failed to obtain CWD.");
