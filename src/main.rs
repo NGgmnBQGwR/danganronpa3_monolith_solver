@@ -29,6 +29,44 @@ fn get_image_files() -> Vec<PathBuf> {
     results
 }
 
+fn get_average_tile_color(image: &image::DynamicImage, tile_x: u32, tile_y: u32) -> (u8, u8, u8) {
+    let grid_start_x = 80;
+    let grid_start_y = 80;
+    let border_width = 3;
+    let tile_size = 80;
+
+    let current_tile_start_x = grid_start_x + border_width + (tile_x * tile_size);
+    let current_tile_start_y = grid_start_y + border_width + (tile_y * tile_size);
+
+    let tile = image.view(
+        current_tile_start_x,
+        current_tile_start_y,
+        tile_size,
+        tile_size,
+    );
+    let mut r: u32 = 0;
+    let mut g: u32 = 0;
+    let mut b: u32 = 0;
+    let mut count: u32 = 0;
+    for pixel in tile.pixels() {
+        count += 1;
+
+        let pr = u32::from(pixel.2[0]);
+        let pg = u32::from(pixel.2[1]);
+        let pb = u32::from(pixel.2[2]);
+
+        r += pr * pr;
+        g += pg * pg;
+        b += pb * pb;
+    }
+
+    (
+        f64::from(r / count).sqrt() as u8,
+        f64::from(g / count).sqrt() as u8,
+        f64::from(b / count).sqrt() as u8,
+    )
+}
+
 fn generate_monolith_map(image_data: &[u8]) -> Result<MonolithMap, MyError> {
     let image = image::load_from_memory(image_data)?;
     println!("Got image of size {:?}", image.dimensions());
