@@ -80,6 +80,12 @@ fn get_monolith_data(image: &PathBuf) -> Result<MonolithMap, MyError> {
         temp
     };
     if data_filepath.exists() {
+        println!(
+            "Using existing map data from {:?}.",
+            data_filepath
+                .file_name()
+                .unwrap_or_else(|| std::ffi::OsStr::new("???"))
+        );
         let mut data_file = std::fs::File::open(&data_filepath)?;
         let mut buffer = String::new();
         data_file.read_to_string(&mut buffer)?;
@@ -95,6 +101,12 @@ fn get_monolith_data(image: &PathBuf) -> Result<MonolithMap, MyError> {
         let map_data = generate_monolith_map(&image_data)?;
 
         let data_file = std::fs::File::create(&data_filepath)?;
+        println!(
+            "Writing map data to {:?}.",
+            data_filepath
+                .file_name()
+                .unwrap_or_else(|| std::ffi::OsStr::new("???"))
+        );
         serde_json::to_writer(data_file, &map_data)?;
 
         Ok(map_data)
@@ -109,6 +121,12 @@ fn main() {
     }
 
     for image in found_image_files {
+        println!(
+            "Processing image {:?}...",
+            image
+                .file_name()
+                .unwrap_or_else(|| std::ffi::OsStr::new("???"))
+        );
         if let Ok(data) = get_monolith_data(&image) {}
     }
 }
