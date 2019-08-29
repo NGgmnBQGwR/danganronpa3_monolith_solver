@@ -1,10 +1,14 @@
 use std::collections::HashSet;
+use std::sync::Arc;
+use std::thread;
+use std::time::Duration;
 
+use crossbeam::queue::ArrayQueue;
 use serde::{Deserialize, Serialize};
 
 pub type Tile = (usize, usize);
 
-#[derive(Serialize, Deserialize, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
 pub struct MonolithMap(pub [[u8; 22]; 11]);
 
 impl Default for MonolithMap {
@@ -15,7 +19,7 @@ impl Default for MonolithMap {
 
 impl MonolithMap {
     pub fn solve(self) -> Vec<Tile> {
-        vec![]
+        self.solve_threaded_bruteforce()
     }
 
     fn get(&self, x: usize, y: usize) -> u8 {
@@ -144,11 +148,71 @@ impl MonolithMap {
         }
         group.into_iter().collect()
     }
+
+    pub fn solve_threaded_bruteforce(self) -> Vec<Tile> {
+        fn brute_solver(
+            job_queue: Arc<ArrayQueue<(Vec<Tile>, MonolithMap)>>,
+            result_queue: Arc<ArrayQueue<Vec<Tile>>>,
+        ) {
+            loop {
+                let (steps, map) = match job_queue.pop(){
+                    Ok(job) => job,
+                    Err(_) => {
+                        thread::sleep(Duration::from_millis(1_000));
+                        match job_queue.pop() {
+                            Ok(job) => job,
+                            Err(_) => return,
+                        }
+                    },
+                };
+
+                let groups = map.all_groups();
+                if groups.is_empty() {
+                    result_queue.push(steps).expect("Failed to push result.");
+                } else {
+                    for group in groups {
+                        let first_tile = group[0];
+                        let mut new_steps = steps.clone();
+                        new_steps.push(first_tile);
+                        let mut new_map = map.clone();
+                        new_map.click(first_tile.0, first_tile.1);
+                        while job_queue.is_full() {
+                            thread::sleep(Duration::from_millis(100));
+                        }
+                        match job_queue.push((new_steps, new_map)) {
+                            Ok(_) => break,
+                            _ => continue,
+                        }
+                    }
+                }
+            }
+        };
+        let job_queue = Arc::new(ArrayQueue::new(1000));
+        job_queue.push((Vec::<Tile>::new(), self)).expect("Failed to push starting value.");
+        let result_queue: Arc<ArrayQueue<Vec<Tile>>> = Arc::new(ArrayQueue::new(10));
+
+        let workers: Vec<_> = (1..16)
+            .map(|_| {
+                let q1 = job_queue.clone();
+                let q2 = result_queue.clone();
+                thread::spawn(|| brute_solver(q1, q2))
+            })
+            .collect();
+
+        for worker in workers{
+            worker.join().expect("Failed to join on a thread handle.");
+        }
+
+        match result_queue.pop(){
+            Ok(steps) => steps,
+            Err(_) => vec![],
+        }
+    }
 }
 
 #[cfg(test)]
 mod test {
-    use super::MonolithMap;
+    use super::{MonolithMap, Tile};
 
     #[test]
     fn test_solve_1_step(){
@@ -169,7 +233,34 @@ mod test {
         };
         let steps = map.solve();
         assert_eq!(steps.len(), 1);
-        assert_eq!(steps, vec![(8, 6)]);
+        let correct_step_1: Vec<Tile> = vec![(8, 8), (8, 7), (8, 6)];
+        assert!(correct_step_1.contains(&steps[0]));
+    }
+
+
+    #[test]
+    fn test_solve_2_step(){
+        let map = MonolithMap{
+            0: [// 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], // 0
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], // 1
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], // 2
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], // 3
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], // 4
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], // 5
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], // 6
+                [0,0,0,0,0,0,0,3,2,0,0,0,0,0,0,0,0,0,0,0,0,0], // 7
+                [0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0], // 8
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], // 9
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], // 10
+            ]
+        };
+        let steps = map.solve();
+        assert_eq!(steps.len(), 2);
+        let correct_step_1: Vec<Tile> = vec![(8, 8), (9, 8)];
+        assert!(correct_step_1.contains(&steps[0]));
+        let correct_step_2: Vec<Tile> = vec![(7, 7), (8, 7)];
+        assert!(correct_step_2.contains(&steps[1]));
     }
 
     #[test]
