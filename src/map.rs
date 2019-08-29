@@ -22,7 +22,7 @@ impl MonolithMap {
         self.0[y][x]
     }
 
-    fn set(&mut self, x: usize, y: usize, value: u8) {
+    pub fn set(&mut self, x: usize, y: usize, value: u8) {
         debug_assert!(value <= 4);
         self.0[y][x] = value;
     }
