@@ -3,7 +3,7 @@ mod errors;
 mod map;
 
 use std::convert::TryInto;
-use std::io::{BufWriter, Read, Write};
+use std::io::Read;
 use std::path::PathBuf;
 
 use image::GenericImageView;
@@ -47,6 +47,7 @@ fn get_average_tile_color(image: &image::DynamicImage, tile_x: u32, tile_y: u32)
         tile_size - border_width * 2,
         tile_size - border_width * 2,
     );
+
     let mut r: u32 = 0;
     let mut g: u32 = 0;
     let mut b: u32 = 0;
