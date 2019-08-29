@@ -2,7 +2,7 @@ use std::collections::HashSet;
 
 use serde::{Deserialize, Serialize};
 
-type Tile = (usize, usize);
+pub type Tile = (usize, usize);
 
 #[derive(Serialize, Deserialize, Debug, PartialEq)]
 pub struct MonolithMap(pub [[u8; 22]; 11]);
