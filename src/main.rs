@@ -1,7 +1,8 @@
 mod errors;
 mod map;
 
-use std::io::Read;
+use std::convert::TryInto;
+use std::io::{BufWriter, Read, Write};
 use std::path::PathBuf;
 
 use image::GenericImageView;
@@ -67,10 +68,47 @@ fn get_average_tile_color(image: &image::DynamicImage, tile_x: u32, tile_y: u32)
     )
 }
 
+fn get_tile_group(color: (u8, u8, u8)) -> u8 {
+    let groups: [(u8, (u8, u8, u8)); 5] = [
+        (1, (189, 187, 187)),
+        (2, (236, 145, 187)),
+        (3, (211, 171, 110)),
+        (4, (99, 166, 184)),
+        (0, (174, 131, 93)),
+    ];
+
+    let cmp_lambda = |cc1, cc2| {
+        let c1 = u32::from(cc1);
+        let c2 = u32::from(cc2);
+        let delta_percentage = 15;
+        c1 > (c2 - (c2 * delta_percentage) / 100) && c1 < (c2 + (c2 * delta_percentage) / 100)
+    };
+
+    for (group_type, group_color) in &groups {
+        let c1 = cmp_lambda(color.0, group_color.0);
+        let c2 = cmp_lambda(color.1, group_color.1);
+        let c3 = cmp_lambda(color.2, group_color.2);
+
+        if c1 && c2 && c3 {
+            return *group_type;
+        }
+    }
+    unreachable!("Tried to match tile of unknown avg color {:?}", color);
+}
+
 fn generate_monolith_map(image_data: &[u8]) -> Result<MonolithMap, MyError> {
     let image = image::load_from_memory(image_data)?;
-    println!("Got image of size {:?}", image.dimensions());
-    Ok(MonolithMap::default())
+    let mut map = MonolithMap::default();
+
+    for x in 0..22usize {
+        for y in 0..11usize {
+            let avg_color =
+                get_average_tile_color(&image, x.try_into().unwrap(), y.try_into().unwrap());
+            let tile_group = get_tile_group(avg_color);
+            map.set(x, y, tile_group);
+        }
+    }
+    Ok(map)
 }
 
 fn get_monolith_data(image: &PathBuf) -> Result<MonolithMap, MyError> {
