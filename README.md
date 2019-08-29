@@ -1,6 +1,6 @@
 # Automatic solver for Monolith minigame from Danganronpa V3, in Rust.
 
-Make sure that you play in 1980x1080, borderless, you just started the minigame and the cursor isn't obstucting any tiles.
+Make sure that you play in 1980x1080, borderless, you just started the minigame on Mean difficulty and the cursor isn't obstucting any tiles.
 
 Make a screenshot of the Monolith minigame game field.
 Save it as PNG and put it in the same folder as monolith_solver executable.
