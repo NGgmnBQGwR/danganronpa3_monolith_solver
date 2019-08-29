@@ -111,7 +111,7 @@ fn generate_monolith_map(image_data: &[u8]) -> Result<MonolithMap, MyError> {
     Ok(map)
 }
 
-fn get_monolith_data(image: &PathBuf) -> Result<MonolithMap, MyError> {
+fn get_monolith_map(image: &PathBuf) -> Result<MonolithMap, MyError> {
     let data_filepath = {
         let mut temp = image.clone();
         temp.set_extension("map");
@@ -165,6 +165,6 @@ fn main() {
                 .file_name()
                 .unwrap_or_else(|| std::ffi::OsStr::new("???"))
         );
-        if let Ok(data) = get_monolith_data(&image) {}
+        if let Ok(data) = get_monolith_map(&image) {}
     }
 }
