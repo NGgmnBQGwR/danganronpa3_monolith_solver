@@ -146,7 +146,12 @@ impl MonolithMap {
                 group.insert((x + 1, y));
             }
         }
-        group.into_iter().collect()
+        let group: Vec<Tile> = group.into_iter().collect();
+        if group.len() == 1 {
+            Vec::new()
+        } else {
+            group
+        }
     }
 
     pub fn solve_threaded_bruteforce(self) -> Vec<Tile> {
