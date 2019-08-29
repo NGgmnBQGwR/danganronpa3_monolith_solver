@@ -1,22 +1,19 @@
-# danganronpa3_monolith_solver
+# Automatic solver for Monolith minigame from Danganronpa V3, in Rust.
 
-Automatic solver for Monolith minigame from Danganronpa V3 in Rust.
+Make sure that you play in 1980x1080, borderless, you just started the minigame and the cursor isn't obstucting any tiles.
 
-Step 1.
-Save a screenshot of the Monolith minigame game field as PNG in the same folder as monolith_solver executable.
-Make sure that you play in 1980x1080 and cursor isn't placed on the game field.
+Make a screenshot of the Monolith minigame game field.
+Save it as PNG and put it in the same folder as monolith_solver executable.
 
-Step 2.
 Run monolith_solver executable.
 Near your screenshot file, a new "*.map" file should have appeared. If not, consult error messages.
 Near your screenshot file, a new "*.ahk" file should have appeared. If not, consult error messages.
 
-Step 3.
 Run the resulting ".ahk" file. Make sure you have Autohotkey (https://www.autohotkey.com/) installed.
 
-Step 4.
-Get back to the game, to the same game field that you made a screenshot of in step #1.
+Return to the game.
+You should see green circle indicating your next move. If not, consult error messages in autohotkey console.
+Left mouse click shows the next step, right mouse click shows the previous step.
+When done, press "q" to close the AHK script.
 
-Step 5.
-Press "1" on the keyboard.
-This should start the auto-solver process. If not, consult error messages in autohotkey console.
+In case you need it, list of tiles to click is stored in ahk file as "tiles" variable.
