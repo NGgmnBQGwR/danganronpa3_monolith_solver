@@ -1,3 +1,4 @@
+mod create_ahk;
 mod errors;
 mod map;
 
@@ -7,6 +8,7 @@ use std::path::PathBuf;
 
 use image::GenericImageView;
 
+use create_ahk::write_solving_steps;
 use errors::MyError;
 use map::MonolithMap;
 
@@ -165,6 +167,15 @@ fn main() {
                 .file_name()
                 .unwrap_or_else(|| std::ffi::OsStr::new("???"))
         );
-        if let Ok(data) = get_monolith_map(&image) {}
+        match get_monolith_map(&image) {
+            Ok(map) => {
+                let steps = map.solve();
+                match write_solving_steps(&image, steps) {
+                    Ok(_) => println!("Successfully finished processing file."),
+                    Err(error) => println!("Failed to write solving steps. Error: {:?}", error),
+                }
+            }
+            Err(error) => println!("Unable to process image. Error: {:?}", error),
+        }
     }
 }
