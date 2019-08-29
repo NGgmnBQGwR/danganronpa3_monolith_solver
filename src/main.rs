@@ -33,17 +33,17 @@ fn get_image_files() -> Vec<PathBuf> {
 fn get_average_tile_color(image: &image::DynamicImage, tile_x: u32, tile_y: u32) -> (u8, u8, u8) {
     let grid_start_x = 80;
     let grid_start_y = 80;
-    let border_width = 3;
+    let border_width = 4;
     let tile_size = 80;
 
-    let current_tile_start_x = grid_start_x + border_width + (tile_x * tile_size);
-    let current_tile_start_y = grid_start_y + border_width + (tile_y * tile_size);
+    let current_tile_start_x = grid_start_x + tile_x * tile_size;
+    let current_tile_start_y = grid_start_y + tile_y * tile_size;
 
     let tile = image.view(
-        current_tile_start_x,
-        current_tile_start_y,
-        tile_size,
-        tile_size,
+        current_tile_start_x + border_width,
+        current_tile_start_y + border_width,
+        tile_size - border_width * 2,
+        tile_size - border_width * 2,
     );
     let mut r: u32 = 0;
     let mut g: u32 = 0;
