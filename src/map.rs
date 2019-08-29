@@ -94,11 +94,11 @@ impl MonolithMap {
 
         for x in 0..max_x {
             for y in 0..max_y {
-                if self.get(x, y) != 0 && !visited.contains(&(x,y)) {
+                if self.get(x, y) != 0 && !visited.contains(&(x, y)) {
                     let group = self.get_group(x, y);
                     if !group.is_empty() {
-                        for (x,y) in group.iter() {
-                            visited.insert((*x,*y));
+                        for (x, y) in group.iter() {
+                            visited.insert((*x, *y));
                         }
                         groups.push(group);
                     }
@@ -160,7 +160,7 @@ impl MonolithMap {
             result_queue: Arc<ArrayQueue<Vec<Tile>>>,
         ) {
             loop {
-                let (steps, map) = match job_queue.pop(){
+                let (steps, map) = match job_queue.pop() {
                     Ok(job) => job,
                     Err(_) => {
                         thread::sleep(Duration::from_millis(1_000));
@@ -168,7 +168,7 @@ impl MonolithMap {
                             Ok(job) => job,
                             Err(_) => return,
                         }
-                    },
+                    }
                 };
 
                 let groups = map.all_groups();
@@ -193,7 +193,9 @@ impl MonolithMap {
             }
         };
         let job_queue = Arc::new(ArrayQueue::new(1000));
-        job_queue.push((Vec::<Tile>::new(), self)).expect("Failed to push starting value.");
+        job_queue
+            .push((Vec::<Tile>::new(), self))
+            .expect("Failed to push starting value.");
         let result_queue: Arc<ArrayQueue<Vec<Tile>>> = Arc::new(ArrayQueue::new(10));
 
         let workers: Vec<_> = (1..16)
@@ -204,11 +206,11 @@ impl MonolithMap {
             })
             .collect();
 
-        for worker in workers{
+        for worker in workers {
             worker.join().expect("Failed to join on a thread handle.");
         }
 
-        match result_queue.pop(){
+        match result_queue.pop() {
             Ok(steps) => steps,
             Err(_) => vec![],
         }
@@ -241,7 +243,6 @@ mod test {
         let correct_step_1: Vec<Tile> = vec![(8, 8), (8, 7), (8, 6)];
         assert!(correct_step_1.contains(&steps[0]));
     }
-
 
     #[test]
     fn test_solve_2_step(){
