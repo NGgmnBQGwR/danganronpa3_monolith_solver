@@ -158,6 +158,24 @@ impl MonolithMap {
         }
     }
 
+    fn get_dead_tiles_count(&self) -> u32 {
+        let max_y = self.0.len();
+        let max_x = self.0[0].len();
+        let mut count = 0;
+
+        for x in 0..max_x {
+            for y in 0..max_y {
+                if self.get(x, y) != 0 {
+                    let group = self.get_group(x, y);
+                    if group.is_empty(){
+                        count += 1;
+                    }
+                }
+            }
+        }
+        count
+    }
+
     pub fn solve_threaded_bruteforce(self) -> Vec<Tile> {
         fn brute_solver(
             job_queue: Arc<ArrayQueue<(Vec<Tile>, MonolithMap)>>,
@@ -519,5 +537,27 @@ mod test {
 
         let groups = map.all_groups();
         assert_eq!(groups.len(), 3);
+    }
+
+    #[test]
+    fn test_get_dead_tiles_count(){
+        let map = MonolithMap{
+            0: [// 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+                [3,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,1], // 0
+                [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3], // 1
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], // 2
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], // 3
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], // 4
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], // 5
+                [0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0], // 6
+                [0,0,0,0,0,0,0,0,0,0,2,2,2,0,0,0,0,0,0,0,0,0], // 7
+                [0,3,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0], // 8
+                [2,1,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1], // 9
+                [0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1], // 10
+            ]
+        };
+
+        let dead_tiles = map.get_dead_tiles_count();
+        assert_eq!(dead_tiles, 9);
     }
 }
