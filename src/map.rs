@@ -179,8 +179,9 @@ impl MonolithMap {
     pub fn solve_threaded_bruteforce(self) -> Vec<Tile> {
         fn brute_solver(
             job_queue: Arc<ArrayQueue<(Vec<Tile>, MonolithMap)>>,
-            result_queue: Arc<ArrayQueue<Vec<Tile>>>,
+            result_queue: Arc<ArrayQueue<(u32, Vec<Tile>)>>,
         ) {
+            let max_dead_cells_allowed = 20;
             loop {
                 let (steps, map) = match job_queue.pop() {
                     Ok(job) => job,
@@ -195,7 +196,14 @@ impl MonolithMap {
 
                 let groups = map.all_groups();
                 if groups.is_empty() {
-                    result_queue.push(steps).expect("Failed to push result.");
+                    let count = map.get_dead_tiles_count();
+
+                    if result_queue.is_empty() || count < max_dead_cells_allowed {
+                        let res = result_queue.push((count, steps));
+                        if res.is_err(){
+                            return
+                        }
+                    }
                 } else {
                     for group in groups {
                         let first_tile = group[0];
@@ -218,7 +226,7 @@ impl MonolithMap {
         job_queue
             .push((Vec::<Tile>::new(), self))
             .expect("Failed to push starting value.");
-        let result_queue: Arc<ArrayQueue<Vec<Tile>>> = Arc::new(ArrayQueue::new(10));
+        let result_queue = Arc::new(ArrayQueue::new(100));
 
         let workers: Vec<_> = (1..16)
             .map(|_| {
@@ -232,10 +240,13 @@ impl MonolithMap {
             worker.join().expect("Failed to join on a thread handle.");
         }
 
-        match result_queue.pop() {
-            Ok(steps) => steps,
-            Err(_) => vec![],
+        let mut results = Vec::new();
+        while let Ok(value) = result_queue.pop() {
+            results.push(value);
         }
+        results.sort();
+        results.reverse();
+        results.pop().unwrap_or_default().1
     }
 }
 
@@ -288,6 +299,32 @@ mod test {
         let correct_step_1: Vec<Tile> = vec![(8, 8), (9, 8)];
         assert!(correct_step_1.contains(&steps[0]));
         let correct_step_2: Vec<Tile> = vec![(7, 7), (8, 7)];
+        assert!(correct_step_2.contains(&steps[1]));
+    }
+
+
+    #[test]
+    fn test_solve_2_step_with_alternative(){
+        let map = MonolithMap{
+            0: [// 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], // 0
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], // 1
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], // 2
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], // 3
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], // 4
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], // 5
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], // 6
+                [0,0,0,0,0,0,3,3,2,0,0,0,0,0,0,0,0,0,0,0,0,0], // 7
+                [0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,2,4,2,0,0], // 8
+                [0,0,3,0,0,0,0,0,3,2,0,0,0,0,0,0,0,0,0,0,0,0], // 9
+                [0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], // 10
+            ]
+        };
+        let steps = map.solve();
+        assert_eq!(steps.len(), 2);
+        let correct_step_1: Vec<Tile> = vec![(8, 8), (9, 8)];
+        assert!(correct_step_1.contains(&steps[0]));
+        let correct_step_2: Vec<Tile> = vec![(6, 7), (7, 7), (8, 7)];
         assert!(correct_step_2.contains(&steps[1]));
     }
 
