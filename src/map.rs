@@ -214,10 +214,7 @@ impl MonolithMap {
                         while job_queue.is_full() {
                             thread::sleep(Duration::from_millis(100));
                         }
-                        match job_queue.push((new_steps, new_map)) {
-                            Ok(_) => break,
-                            _ => continue,
-                        }
+                        job_queue.push((new_steps, new_map)).expect("Failed to push a new job.");
                     }
                 }
             }
