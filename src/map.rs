@@ -72,19 +72,19 @@ impl MonolithMap {
         let max_x = self.0[0].len() - 1;
 
         // above
-        if y > 0 {
+        if y > 0 && self.get(x, y-1) != 0 {
             neighbors.push((x, y - 1));
         }
         // below
-        if y < max_y {
+        if y < max_y && self.get(x, y+1) != 0 {
             neighbors.push((x, y + 1));
         }
         // left
-        if x > 0 {
+        if x > 0 && self.get(x-1, y) != 0 {
             neighbors.push((x - 1, y));
         }
         // right
-        if x < max_x {
+        if x < max_x && self.get(x+1, y) != 0 {
             neighbors.push((x + 1, y));
         }
         neighbors
@@ -491,10 +491,14 @@ mod test {
                 [0,0,0,0,0,0,0,0,0,0,2,2,2,0,0,0,0,0,0,0,0,0], // 7
                 [0,3,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0], // 8
                 [2,1,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1], // 9
-                [0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1], // 10
+                [0,1,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,1,1], // 10
             ]
         };
 
+        {
+            let neighbors = map.get_neighbors(14, 10);
+            assert_eq!(neighbors.len(), 0);
+        }
         {
             let mut neighbors = map.get_neighbors(0, 0);
             neighbors.sort();
