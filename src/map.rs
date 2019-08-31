@@ -518,10 +518,10 @@ mod test {
             assert_eq!(neighbors, vec![(20, 10), (21, 9)]);
         }
         {
-            let mut neighbors = map.get_neighbors(0, 21);
+            let mut neighbors = map.get_neighbors(21, 0);
             neighbors.sort();
             assert_eq!(neighbors.len(), 2);
-            assert_eq!(neighbors, vec![(0, 20), (1, 21)]);
+            assert_eq!(neighbors, vec![(20, 0), (21, 1)]);
         }
         {
             let mut neighbors = map.get_neighbors(11, 7);
