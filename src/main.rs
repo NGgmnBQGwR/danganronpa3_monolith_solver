@@ -170,6 +170,7 @@ fn main() {
         );
         match get_monolith_map(&image) {
             Ok(map) => {
+                println!("Solving the map (this may take a few minutes, be patient).");
                 let steps = map.solve();
                 match write_solving_steps(&image, steps) {
                     Ok(_) => println!("Successfully finished processing file."),
