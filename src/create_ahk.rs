@@ -2,7 +2,7 @@ use std::io::{BufWriter, Write};
 use std::path::PathBuf;
 
 use crate::errors::MyError;
-use crate::map::Tile;
+use crate::map::{MonolithMap, Tile};
 
 const AHK_TEMPLATE: &str = r#"
 #SingleInstance Force
@@ -85,7 +85,7 @@ fn test_create_array_string() {
     assert_eq!(result, "[[1,2], [21,10], [0,5]]");
 }
 
-pub fn write_solving_steps(image: &PathBuf, steps: Vec<Tile>) -> Result<(), MyError> {
+pub fn write_solving_steps(image: &PathBuf, map: MonolithMap) -> Result<(), MyError> {
     let solver_filepath = {
         let mut temp = image.clone();
         temp.set_extension("ahk");
@@ -102,6 +102,10 @@ pub fn write_solving_steps(image: &PathBuf, steps: Vec<Tile>) -> Result<(), MyEr
     }
 
     let solver_file = std::fs::File::create(&solver_filepath)?;
+
+    println!("Solving the map (this may take a few minutes, be patient).");
+    let steps = map.solve();
+
     println!(
         "Writing solving steps to {:?}.",
         solver_filepath
