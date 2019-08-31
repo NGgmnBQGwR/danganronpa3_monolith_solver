@@ -158,6 +158,24 @@ impl MonolithMap {
         }
     }
 
+    fn get_single_tiles(&self) -> Vec<Tile> {
+        let max_y = self.0.len();
+        let max_x = self.0[0].len();
+        let mut result = Vec::with_capacity(30);
+
+        for x in 0..max_x {
+            for y in 0..max_y {
+                if self.get(x, y) != 0 {
+                    let group = self.get_group(x, y);
+                    if group.is_empty(){
+                        result.push((x,y));
+                    }
+                }
+            }
+        }
+        result
+    }
+
     fn get_dead_tiles_count(&self) -> u32 {
         let max_y = self.0.len();
         let max_x = self.0[0].len();
@@ -166,8 +184,8 @@ impl MonolithMap {
         for x in 0..max_x {
             for y in 0..max_y {
                 if self.get(x, y) != 0 {
-                    let group = self.get_group(x, y);
-                    if group.is_empty(){
+                    let neighbors = self.get_neighbors(x, y);
+                    if neighbors.is_empty(){
                         count += 1;
                     }
                 }
@@ -574,7 +592,29 @@ mod test {
     }
 
     #[test]
-    fn test_get_dead_tiles_count(){
+    fn test_get_single_tiles() {
+        let map = MonolithMap{
+            0: [// 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+                [3,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,1], // 0
+                [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3], // 1
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], // 2
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], // 3
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], // 4
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], // 5
+                [0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0], // 6
+                [0,0,0,0,0,0,0,0,0,0,2,2,2,0,0,0,0,0,0,0,0,0], // 7
+                [0,3,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0], // 8
+                [2,1,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1], // 9
+                [0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1], // 10
+            ]
+        };
+
+        let single_tiles = map.get_single_tiles().len();
+        assert_eq!(single_tiles, 9);
+    }
+
+    #[test]
+    fn test_get_dead_tiles_count_1(){
         let map = MonolithMap{
             0: [// 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
                 [3,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,1], // 0
@@ -592,6 +632,28 @@ mod test {
         };
 
         let dead_tiles = map.get_dead_tiles_count();
-        assert_eq!(dead_tiles, 9);
+        assert_eq!(dead_tiles, 0);
+    }
+
+    #[test]
+    fn test_get_dead_tiles_count_2(){
+        let map = MonolithMap{
+            0: [// 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+                [3,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,1], // 0
+                [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3], // 1
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], // 2
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], // 3
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], // 4
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], // 5
+                [0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0], // 6
+                [0,0,0,0,0,0,0,0,0,0,2,2,2,0,0,0,0,0,0,0,0,0], // 7
+                [0,3,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0], // 8
+                [0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1], // 9
+                [3,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0], // 10
+            ]
+        };
+
+        let dead_tiles = map.get_dead_tiles_count();
+        assert_eq!(dead_tiles, 6);
     }
 }
