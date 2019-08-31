@@ -72,19 +72,19 @@ impl MonolithMap {
         let max_x = self.0[0].len() - 1;
 
         // above
-        if y > 0 && self.get(x, y-1) != 0 {
+        if y > 0 && self.get(x, y - 1) != 0 {
             neighbors.push((x, y - 1));
         }
         // below
-        if y < max_y && self.get(x, y+1) != 0 {
+        if y < max_y && self.get(x, y + 1) != 0 {
             neighbors.push((x, y + 1));
         }
         // left
-        if x > 0 && self.get(x-1, y) != 0 {
+        if x > 0 && self.get(x - 1, y) != 0 {
             neighbors.push((x - 1, y));
         }
         // right
-        if x < max_x && self.get(x+1, y) != 0 {
+        if x < max_x && self.get(x + 1, y) != 0 {
             neighbors.push((x + 1, y));
         }
         neighbors
@@ -167,8 +167,8 @@ impl MonolithMap {
             for y in 0..max_y {
                 if self.get(x, y) != 0 {
                     let group = self.get_group(x, y);
-                    if group.is_empty(){
-                        result.push((x,y));
+                    if group.is_empty() {
+                        result.push((x, y));
                     }
                 }
             }
@@ -185,7 +185,7 @@ impl MonolithMap {
             for y in 0..max_y {
                 if self.get(x, y) != 0 {
                     let neighbors = self.get_neighbors(x, y);
-                    if neighbors.is_empty(){
+                    if neighbors.is_empty() {
                         count += 1;
                     }
                 }
@@ -267,8 +267,8 @@ impl MonolithMap {
 
                     if result_queue.is_empty() || count < max_dead_cells_allowed {
                         let res = result_queue.push((count, steps));
-                        if res.is_err(){
-                            return
+                        if res.is_err() {
+                            return;
                         }
                     }
                 } else {
@@ -281,7 +281,9 @@ impl MonolithMap {
                         while job_queue.is_full() {
                             thread::sleep(Duration::from_millis(100));
                         }
-                        job_queue.push((new_steps, new_map)).expect("Failed to push a new job.");
+                        job_queue
+                            .push((new_steps, new_map))
+                            .expect("Failed to push a new job.");
                     }
                 }
             }
@@ -486,7 +488,6 @@ mod test {
         };
         assert_eq!(map_after, map_after_after);
     }
-
 
     #[test]
     fn test_click_tile_corner(){

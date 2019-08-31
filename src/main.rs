@@ -169,12 +169,10 @@ fn main() {
                 .unwrap_or_else(|| std::ffi::OsStr::new("???"))
         );
         match get_monolith_map(&image) {
-            Ok(map) => {
-                match write_solving_steps(&image, map) {
-                    Ok(_) => println!("Successfully finished processing file."),
-                    Err(error) => println!("Failed to write solving steps. Error: {:?}", error),
-                }
-            }
+            Ok(map) => match write_solving_steps(&image, map) {
+                Ok(_) => println!("Successfully finished processing file."),
+                Err(error) => println!("Failed to write solving steps. Error: {:?}", error),
+            },
             Err(error) => println!("Unable to process image. Error: {:?}", error),
         }
     }
