@@ -201,7 +201,7 @@ impl MonolithMap {
             results: &mut Vec<SolvedPath>,
             steps: Vec<Tile>,
             map: MonolithMap,
-            dead_cells_limit: u32,
+            dead_tiles_limit: u32,
         ) {
             let groups = map.all_groups();
             if groups.is_empty() {
@@ -217,7 +217,7 @@ impl MonolithMap {
 
                     let mut new_map = map.clone();
                     new_map.click(first_tile.0, first_tile.1);
-                    if new_map.get_dead_tiles_count() > dead_cells_limit {
+                    if new_map.get_dead_tiles_count() > dead_tiles_limit {
                         continue;
                     }
 
@@ -226,15 +226,15 @@ impl MonolithMap {
                         temp.push(first_tile);
                         temp
                     };
-                    work(results, new_steps, new_map, dead_cells_limit);
+                    work(results, new_steps, new_map, dead_tiles_limit);
                 }
             }
         }
 
         let mut results: Vec<SolvedPath> = Vec::with_capacity(100);
-        for max_dead_cells_allowed in [5u32, 10, 15, 20].iter() {
+        for max_dead_tiles_allowed in [5u32, 10, 15, 20].iter() {
             let map = self.clone();
-            work(&mut results, Vec::new(), map, *max_dead_cells_allowed);
+            work(&mut results, Vec::new(), map, *max_dead_tiles_allowed);
             if !results.is_empty() {
                 break;
             }
@@ -248,7 +248,7 @@ impl MonolithMap {
             job_queue: Arc<ArrayQueue<(Vec<Tile>, MonolithMap)>>,
             result_queue: Arc<ArrayQueue<(u32, Vec<Tile>)>>,
         ) {
-            let max_dead_cells_allowed = 20;
+            let max_dead_tiles_allowed = 20;
             loop {
                 let (steps, map) = match job_queue.pop() {
                     Ok(job) => job,
@@ -265,7 +265,7 @@ impl MonolithMap {
                 if groups.is_empty() {
                     let count = map.get_dead_tiles_count();
 
-                    if result_queue.is_empty() || count < max_dead_cells_allowed {
+                    if result_queue.is_empty() || count < max_dead_tiles_allowed {
                         let res = result_queue.push((count, steps));
                         if res.is_err() {
                             return;
