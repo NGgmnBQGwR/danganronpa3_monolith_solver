@@ -232,7 +232,7 @@ impl MonolithMap {
         }
 
         let mut results: Vec<SolvedPath> = Vec::with_capacity(100);
-        for max_dead_tiles_allowed in [5u32, 10, 15, 20].iter() {
+        for max_dead_tiles_allowed in [0u32, 5, 10, 15, 20].iter() {
             println!("Trying to find solution with <= {} dead tiles.", max_dead_tiles_allowed);
             let map = self.clone();
             work(&mut results, Vec::new(), map, *max_dead_tiles_allowed);
