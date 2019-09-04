@@ -202,8 +202,8 @@ impl MonolithMap {
         for x in 0..max_x {
             for y in 0..max_y {
                 if self.get(x, y) != 0 {
-                    let neighbors = self.get_neighbors(x, y);
-                    if neighbors.is_empty() {
+                    let group = self.get_group(x, y);
+                    if group.is_empty() {
                         count += 1;
                     }
                 }
@@ -583,7 +583,7 @@ mod test {
         };
 
         let dead_tiles = map.get_dead_tiles_count();
-        assert_eq!(dead_tiles, 0);
+        assert_eq!(dead_tiles, 9);
     }
 
     #[test]
@@ -599,13 +599,13 @@ mod test {
                 [0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0], // 6
                 [0,0,0,0,0,0,0,0,0,0,2,2,2,0,0,0,0,0,0,0,0,0], // 7
                 [0,3,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0], // 8
-                [0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1], // 9
-                [3,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0], // 10
+                [0,1,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1], // 9
+                [3,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0], // 10
             ]
         };
 
         let dead_tiles = map.get_dead_tiles_count();
-        assert_eq!(dead_tiles, 6);
+        assert_eq!(dead_tiles, 12);
     }
 
     #[test]
