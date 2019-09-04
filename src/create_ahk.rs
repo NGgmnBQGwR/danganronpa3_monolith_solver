@@ -9,9 +9,9 @@ const AHK_TEMPLATE: &str = r#"
 
 makeCircle() {
     Gui New, +E0x20 +AlwaysOnTop +ToolWindow -Caption +HwndHWND
-    r := 80
-    thickness := 10
-    transparency := 200
+    r := 120
+    thickness := 20
+    transparency := 240
     color := 0x00CD00
 
     outer := DllCall("CreateEllipticRgn", "Int", 0, "Int", 0, "Int", r, "Int", r)
@@ -34,8 +34,8 @@ loop {
     if WinActive("ahk_exe Dangan3Win.exe")
     {
         tile := tiles[step]
-        x := tile[1] * 80 + 80
-        y := tile[2] * 80 + 80
+        x := tile[1] * 80 + 80 - 20
+        y := tile[2] * 80 + 80 - 20
         Gui %hCircle%:Show, X%x% Y%y% NoActivate
     }
     else
