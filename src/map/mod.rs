@@ -161,6 +161,21 @@ impl MonolithMap {
         }
     }
 
+    fn get_all_tiles(&self) -> Vec<Tile> {
+        let max_y = self.0.len();
+        let max_x = self.0[0].len();
+        let mut result = Vec::with_capacity(264);
+
+        for x in 0..max_x {
+            for y in 0..max_y {
+                if self.get(x, y) != 0 {
+                    result.push((x, y));
+                }
+            }
+        }
+        result
+    }
+
     fn get_single_tiles(&self) -> Vec<Tile> {
         let max_y = self.0.len();
         let max_x = self.0[0].len();
@@ -591,5 +606,26 @@ mod test {
 
         let dead_tiles = map.get_dead_tiles_count();
         assert_eq!(dead_tiles, 6);
+    }
+
+    #[test]
+    fn test_get_all_tiles_count(){
+        let map = MonolithMap{
+            0: [// 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+                [3,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,1], // 0
+                [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3], // 1
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], // 2
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], // 3
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], // 4
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], // 5
+                [0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0], // 6
+                [0,0,0,0,0,0,0,0,0,0,2,2,2,0,0,0,0,0,0,0,0,0], // 7
+                [0,3,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0], // 8
+                [0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1], // 9
+                [3,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0], // 10
+            ]
+        };
+        let all_tiles = map.get_all_tiles();
+        assert_eq!(all_tiles.len(), 17);
     }
 }
