@@ -101,7 +101,7 @@ pub fn write_solving_steps(image: &PathBuf, map: MonolithMap) -> Result<(), MyEr
         return Ok(());
     }
 
-    println!("Solving the map (this may take a minute).");
+    println!("Solving the map (this may take a while).");
     let steps = map.solve();
 
     let solver_file = std::fs::File::create(&solver_filepath)?;
