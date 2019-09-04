@@ -2,7 +2,7 @@ use crate::map::{MonolithMap, Tile};
 use rand::rngs::ThreadRng;
 use rand::seq::SliceRandom;
 use rand::thread_rng;
-use std::time::{Duration, Instant};
+use std::time::Instant;
 
 pub trait RecursiveRandomBruteforce {
     fn solve_recursive_random_bruteforce(self) -> Vec<Tile>;
