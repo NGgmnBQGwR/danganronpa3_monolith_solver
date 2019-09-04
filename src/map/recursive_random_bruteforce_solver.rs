@@ -46,7 +46,7 @@ impl RecursiveRandomBruteforce for MonolithMap {
             let new_map = map.clone();
             let (count, steps) = random_walk(&mut results, Vec::new(), new_map, &mut rng);
             if results.is_empty() || count < results.first().unwrap().0 {
-                println!("Found result with {} dead tiles remaining.", count);
+                println!("Found result with {} tiles remaining.", count);
                 results.push((count, steps));
                 results.sort();
             };
