@@ -1,13 +1,13 @@
-mod threaded_bruteforce_solver;
 mod recursive_bruteforce_solver;
 mod recursive_random_bruteforce_solver;
+mod threaded_bruteforce_solver;
 
-use std::collections::HashSet;
 use serde::{Deserialize, Serialize};
+use std::collections::HashSet;
 
-use threaded_bruteforce_solver::ThreadedBruteforce;
 use recursive_bruteforce_solver::RecursiveBruteforce;
 use recursive_random_bruteforce_solver::RecursiveRandomBruteforce;
+use threaded_bruteforce_solver::ThreadedBruteforce;
 
 pub type Tile = (usize, usize);
 
