@@ -55,7 +55,7 @@ impl RecursiveRandomBruteforce for MonolithMap {
             } else {
                 let best = results.first().unwrap().0;
                 let elapsed = start.elapsed().as_secs();
-                if elapsed > 10 && best < 5 || elapsed > 20 && best < 8 || elapsed > 30 {
+                if elapsed > 10 && best < 5 || elapsed > 30 && best < 8 || elapsed > 60 && best < 10 || elapsed > 120 && best < 15 || elapsed > 300 {
                     break;
                 }
             }
