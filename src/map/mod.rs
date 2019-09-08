@@ -1,14 +1,14 @@
 mod recursive_bruteforce_solver;
+mod recursive_lesser_than_n_solver;
 mod recursive_random_bruteforce_solver;
 mod threaded_bruteforce_solver;
-mod recursive_lesser_than_n_solver;
 
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
 
 use recursive_bruteforce_solver::RecursiveBruteforce;
-use recursive_random_bruteforce_solver::RecursiveRandomBruteforce;
 use recursive_lesser_than_n_solver::RecursiveLesserThanNDead;
+use recursive_random_bruteforce_solver::RecursiveRandomBruteforce;
 use threaded_bruteforce_solver::ThreadedBruteforce;
 
 pub type Tile = (usize, usize);
@@ -266,7 +266,6 @@ mod test {
         let correct_step_2: Vec<Tile> = vec![(7, 7), (8, 7)];
         assert!(correct_step_2.contains(&steps[1]));
     }
-
 
     #[test]
     fn test_solve_2_step_with_alternative(){
