@@ -1,12 +1,14 @@
 mod recursive_bruteforce_solver;
 mod recursive_random_bruteforce_solver;
 mod threaded_bruteforce_solver;
+mod recursive_lesser_than_n_solver;
 
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
 
 use recursive_bruteforce_solver::RecursiveBruteforce;
 use recursive_random_bruteforce_solver::RecursiveRandomBruteforce;
+use recursive_lesser_than_n_solver::RecursiveLesserThanNDead;
 use threaded_bruteforce_solver::ThreadedBruteforce;
 
 pub type Tile = (usize, usize);
@@ -22,7 +24,7 @@ impl Default for MonolithMap {
 
 impl MonolithMap {
     pub fn solve(self) -> Vec<Tile> {
-        self.solve_recursive_random_bruteforce()
+        self.solve_recursive_lesser_n_dead()
     }
 
     fn get(&self, x: usize, y: usize) -> u8 {
