@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
+use std::convert::TryInto;
+
 use super::monolith_solver;
 
 pub type Tile = (usize, usize);
@@ -263,19 +265,37 @@ impl MonolithMap {
     pub fn get_dead_tiles_count(&self) -> u32 {
         let max_y = self.0.len();
         let max_x = self.0[0].len();
-        let mut count = 0;
+        let mut counted = HashSet::with_capacity(100);
 
         for x in 0..max_x {
             for y in 0..max_y {
                 if self.get(x, y) != 0 {
-                    let group = self.get_group(x, y);
-                    if group.is_empty() {
-                        count += 1;
+                    if counted.contains(&(x, y)) {
+                        continue;
+                    }
+
+                    if !self.has_neighbors(x, y) {
+                        counted.insert((x, y));
+                        continue;
+                    }
+
+                    let tile_cluster = self.get_tile_cluster(x, y);
+                    let mut dead_cluster = true;
+                    for tile in &tile_cluster {
+                        if dead_cluster && self.has_group(tile.0, tile.1) {
+                            dead_cluster = false;
+                            break;
+                        }
+                    }
+                    if dead_cluster {
+                        for tile in tile_cluster {
+                            counted.insert((tile.0, tile.1));
+                        }
                     }
                 }
             }
         }
-        count
+        counted.len().try_into().unwrap()
     }
 }
 
@@ -743,7 +763,7 @@ mod test {
         };
 
         let dead_tiles = map.get_dead_tiles_count();
-        assert_eq!(dead_tiles, 9);
+        assert_eq!(dead_tiles, 6);
     }
 
     #[test]
@@ -765,7 +785,7 @@ mod test {
         };
 
         let dead_tiles = map.get_dead_tiles_count();
-        assert_eq!(dead_tiles, 12);
+        assert_eq!(dead_tiles, 9);
     }
 
     #[test]
