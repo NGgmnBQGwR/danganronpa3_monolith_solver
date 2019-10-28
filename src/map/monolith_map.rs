@@ -121,6 +121,21 @@ impl MonolithMap {
         groups
     }
 
+    fn has_group(&self, x: usize, y: usize) -> bool {
+        let group_type = self.get(x, y);
+        if group_type == 0 {
+            return false;
+        }
+
+        let max_y = self.0.len() - 1;
+        let max_x = self.0[0].len() - 1;
+
+        (y > 0 && self.get(x, y - 1) == group_type)
+            || (y < max_y && self.get(x, y + 1) == group_type)
+            || (x > 0 && self.get(x - 1, y) == group_type)
+            || (x < max_x && self.get(x + 1, y) == group_type)
+    }
+
     fn get_group(&self, x: usize, y: usize) -> Vec<Tile> {
         let mut group = HashSet::with_capacity(10);
 
@@ -528,6 +543,53 @@ mod test {
         {
             let neighbors = map.has_neighbors(11, 7);
             assert_eq!(neighbors, true);
+        }
+    }
+
+    #[test]
+    fn test_has_group(){
+        let map = MonolithMap{
+            0: [// 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+                [1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,1,4,4,4,4], // 0
+                [2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,4,4,2,4,2], // 1
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,2,4,4,4,3], // 2
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,1,4,0], // 3
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,1,0,4], // 4
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0], // 5
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], // 6
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], // 7
+                [0,0,0,0,0,0,2,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0], // 8
+                [0,0,0,0,0,2,3,3,3,2,0,0,0,0,0,0,0,0,0,0,0,0], // 9
+                [0,0,0,0,0,0,2,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0], // 10
+            ]
+        };
+        {
+            let group = map.has_group(0, 0);
+            assert_eq!(group, true);
+        }
+        {
+            let group = map.has_group(0, 1);
+            assert_eq!(group, false);
+        }
+        {
+            let group = map.has_group(5, 9);
+            assert_eq!(group, false);
+        }
+        {
+            let group = map.has_group(6, 10);
+            assert_eq!(group, true);
+        }
+        {
+            let group = map.has_group(21, 0);
+            assert_eq!(group, true);
+        }
+        {
+            let group = map.has_group(21, 1);
+            assert_eq!(group, false);
+        }
+        {
+            let group = map.has_group(21, 2);
+            assert_eq!(group, false);
         }
     }
 
