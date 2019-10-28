@@ -182,6 +182,51 @@ impl MonolithMap {
         }
     }
 
+    fn get_tile_cluster(&self, x: usize, y: usize) -> Vec<Tile> {
+        let mut group = HashSet::with_capacity(10);
+
+        if self.get(x, y) == 0 {
+            return Vec::new();
+        }
+
+        let mut todo = Vec::with_capacity(10);
+        todo.push((x, y));
+        group.insert((x, y));
+        let max_y = self.0.len() - 1;
+        let max_x = self.0[0].len() - 1;
+
+        while let Some(tile) = todo.pop() {
+            let x = tile.0;
+            let y = tile.1;
+            // above
+            if y > 0 && self.get(x, y - 1) != 0 && !group.contains(&(x, y - 1)) {
+                todo.push((x, y - 1));
+                group.insert((x, y - 1));
+            }
+            // below
+            if y < max_y && self.get(x, y + 1) != 0 && !group.contains(&(x, y + 1)) {
+                todo.push((x, y + 1));
+                group.insert((x, y + 1));
+            }
+            // left
+            if x > 0 && self.get(x - 1, y) != 0 && !group.contains(&(x - 1, y)) {
+                todo.push((x - 1, y));
+                group.insert((x - 1, y));
+            }
+            // right
+            if x < max_x && self.get(x + 1, y) != 0 && !group.contains(&(x + 1, y)) {
+                todo.push((x + 1, y));
+                group.insert((x + 1, y));
+            }
+        }
+        let group: Vec<Tile> = group.into_iter().collect();
+        if group.len() == 1 {
+            Vec::new()
+        } else {
+            group
+        }
+    }
+
     fn get_all_tiles(&self) -> Vec<Tile> {
         let max_y = self.0.len();
         let max_x = self.0[0].len();
@@ -742,5 +787,41 @@ mod test {
         };
         let all_tiles = map.get_all_tiles();
         assert_eq!(all_tiles.len(), 17);
+    }
+
+    #[test]
+    fn test_get_tile_cluster(){
+        let map = MonolithMap{
+            0: [// 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+                [1,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,1,4,4,4,4], // 0
+                [2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,4,4,2,4,2], // 1
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,2,4,4,4,3], // 2
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,1,4,0], // 3
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,1,0,4], // 4
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0], // 5
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], // 6
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], // 7
+                [0,0,0,0,0,0,2,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0], // 8
+                [0,0,0,0,0,2,3,3,3,2,0,0,0,0,0,0,0,0,0,0,0,0], // 9
+                [0,0,0,0,0,0,2,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0], // 10
+            ]
+        };
+        {
+            let mut group = map.get_tile_cluster(0, 0);
+            group.sort();
+            assert_eq!(group.len(), 3);
+            assert_eq!(group, vec![(0, 0), (0, 1), (1, 0),]);
+        }
+        {
+            let mut group = map.get_tile_cluster(6, 9);
+            group.sort();
+            assert_eq!(group.len(), 11);
+        }
+        {
+            let mut group = map.get_tile_cluster(20, 0);
+            group.sort();
+            assert_eq!(map.get(20, 0), 4);
+            assert_eq!(group.len(), 24);
+        }
     }
 }
