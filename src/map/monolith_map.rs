@@ -64,6 +64,17 @@ impl MonolithMap {
         }
     }
 
+    fn has_neighbors(&self, x: usize, y: usize) -> bool {
+        let max_y = self.0.len() - 1;
+        let max_x = self.0[0].len() - 1;
+
+        self.get(x, y) != 0
+            && ((y > 0 && self.get(x, y - 1) != 0)
+                || (y < max_y && self.get(x, y + 1) != 0)
+                || (x > 0 && self.get(x - 1, y) != 0)
+                || (x < max_x && self.get(x + 1, y) != 0))
+    }
+
     fn get_neighbors(&self, x: usize, y: usize) -> Vec<Tile> {
         let mut neighbors = Vec::with_capacity(4);
         let max_y = self.0.len() - 1;
@@ -469,6 +480,54 @@ mod test {
             neighbors.sort();
             assert_eq!(neighbors.len(), 4);
             assert_eq!(neighbors, vec![(10, 7), (11, 6), (11, 8), (12, 7)]);
+        }
+    }
+
+    #[test]
+    fn test_has_neighbors(){
+        let map = MonolithMap{
+            0: [// 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+                [3,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,1], // 0
+                [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3], // 1
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], // 2
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], // 3
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], // 4
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], // 5
+                [0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0], // 6
+                [0,0,0,0,0,0,0,0,0,0,2,2,2,0,0,0,0,0,0,0,0,0], // 7
+                [0,3,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0], // 8
+                [2,1,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1], // 9
+                [0,1,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,1,1], // 10
+            ]
+        };
+
+        {
+            let neighbors = map.has_neighbors(14, 10);
+            assert_eq!(neighbors, false);
+        }
+        {
+            let neighbors = map.has_neighbors(14, 9);
+            assert_eq!(neighbors, false);
+        }
+        {
+            let neighbors = map.has_neighbors(0, 0);
+            assert_eq!(neighbors, true);
+        }
+        {
+            let neighbors = map.has_neighbors(1, 9);
+            assert_eq!(neighbors, true);
+        }
+        {
+            let neighbors = map.has_neighbors(21, 10);
+            assert_eq!(neighbors, true);
+        }
+        {
+            let neighbors = map.has_neighbors(21, 0);
+            assert_eq!(neighbors, true);
+        }
+        {
+            let neighbors = map.has_neighbors(11, 7);
+            assert_eq!(neighbors, true);
         }
     }
 
