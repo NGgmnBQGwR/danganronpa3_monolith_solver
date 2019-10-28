@@ -19,7 +19,7 @@ impl Default for MonolithMap {
 
 impl MonolithMap {
     pub fn solve(self) -> Vec<Tile> {
-        monolith_solver::solve_1(self)
+        monolith_solver::solve_4(self)
     }
 
     fn get(&self, x: usize, y: usize) -> u8 {
