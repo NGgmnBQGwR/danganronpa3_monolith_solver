@@ -3,12 +3,12 @@ use crossbeam::queue::ArrayQueue;
 use rand::rngs::ThreadRng;
 use rand::seq::SliceRandom;
 use rand::thread_rng;
+use std::borrow::Borrow;
 use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
 use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::Duration;
 use std::time::Instant;
-use std::borrow::Borrow;
 
 /// Recursive Random Singlethreaded Unbounbed Bruteforce
 pub fn solve_1(map: MonolithMap) -> Vec<Tile> {
@@ -423,14 +423,7 @@ pub fn solve_6(map: MonolithMap) -> Vec<Tile> {
                         temp.push(first_tile);
                         temp
                     };
-                    work(
-                        result,
-                        new_steps,
-                        new_map,
-                        current_best,
-                        exit_flag,
-                        rng,
-                    );
+                    work(result, new_steps, new_map, current_best, exit_flag, rng);
                 }
             }
         }
