@@ -72,12 +72,11 @@ fn get_average_tile_color(image: &image::DynamicImage, tile_x: u32, tile_y: u32)
 }
 
 fn get_tile_group(color: (u8, u8, u8)) -> u8 {
-    let groups: [(u8, (u8, u8, u8)); 5] = [
+    let groups: [(u8, (u8, u8, u8)); 4] = [
         (1, (189, 187, 187)),
         (2, (236, 145, 187)),
         (3, (211, 171, 110)),
         (4, (99, 166, 184)),
-        (0, (174, 131, 93)),
     ];
 
     let cmp_lambda = |cc1, cc2| {
@@ -96,7 +95,7 @@ fn get_tile_group(color: (u8, u8, u8)) -> u8 {
             return *group_type;
         }
     }
-    unreachable!("Tried to match tile of unknown avg color {:?}", color);
+    0
 }
 
 fn generate_monolith_map(image_data: &[u8]) -> Result<MonolithMap, MyError> {
