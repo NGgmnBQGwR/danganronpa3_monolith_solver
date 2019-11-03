@@ -296,7 +296,10 @@ pub fn solve_5(map: MonolithMap) -> Vec<Tile> {
 
         loop {
             let (steps, map) = match job_queue.pop() {
-                Ok(job) => job,
+                Ok(job) => {
+                    println!("Took new job, {} remains.", job_queue.len());
+                    job
+                }
                 Err(_) => {
                     thread::sleep(Duration::from_millis(1_000));
                     match job_queue.pop() {
