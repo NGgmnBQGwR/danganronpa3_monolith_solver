@@ -143,7 +143,7 @@ impl MonolithMap {
 
         let group_type = self.get(x, y);
         if group_type == 0 {
-            return Vec::new()
+            return Vec::new();
         }
 
         let mut todo = Vec::with_capacity(10);
