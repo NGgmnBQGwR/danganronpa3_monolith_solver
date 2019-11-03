@@ -229,6 +229,26 @@ impl MonolithMap {
         }
     }
 
+    fn all_tile_clusters(&self) -> Vec<Vec<Tile>> {
+        let mut clusters = Vec::with_capacity(30);
+        let mut visited = HashSet::with_capacity(200);
+        let max_y = self.0.len();
+        let max_x = self.0[0].len();
+
+        for x in 0..max_x {
+            for y in 0..max_y {
+                if self.get(x, y) != 0 && self.has_neighbors(x, y) && !visited.contains(&(x, y)) {
+                    let cluster = self.get_tile_cluster(x, y);
+                    for (x, y) in cluster.iter() {
+                        visited.insert((*x, *y));
+                    }
+                    clusters.push(cluster);
+                }
+            }
+        }
+        clusters
+    }
+
     fn create_map_from_cluster(&self, cluster: &[Tile]) -> MonolithMap {
         let mut new_map = MonolithMap::default();
         for tile in cluster {
@@ -893,6 +913,31 @@ mod test {
             assert_eq!(group.len(), 24);
         }
     }
+
+    #[test]
+    fn test_all_clusters(){
+        let map = MonolithMap{
+            0: [// 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+                [1,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,1,4,4,4,4], // 0
+                [2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,4,4,2,4,2], // 1
+                [0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,4,2,4,4,4,3], // 2
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,1,4,0], // 3
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,1,0,4], // 4
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0], // 5
+                [0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], // 6
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], // 7
+                [0,0,0,0,0,0,2,2,2,0,0,0,0,4,4,0,0,0,0,0,0,0], // 8
+                [0,0,0,0,0,2,3,3,3,2,0,0,0,0,4,0,0,0,0,0,0,0], // 9
+                [0,0,0,0,0,0,2,2,2,0,0,0,0,0,4,0,0,5,0,0,0,0], // 10
+            ]
+        };
+        let mut clusters = map.all_tile_clusters();
+        assert_eq!(clusters.len(), 4);
+        clusters.sort();
+        clusters[0].sort();
+        assert_eq!(clusters[0], vec![(0, 0), (0, 1), (1, 0),]);
+    }
+
     #[test]
     fn test_create_map_from_cluster(){
         let map = MonolithMap{
