@@ -323,7 +323,7 @@ pub fn solve_5(map: MonolithMap) -> Vec<Tile> {
         let groups = map.all_groups();
         for group in groups {
             let first_tile = group[0];
-            let mut new_steps = Vec::with_capacity(1);
+            let mut new_steps = Vec::with_capacity(100);
             new_steps.push(first_tile);
             let mut new_map = map.clone();
             new_map.click(first_tile.0, first_tile.1);
