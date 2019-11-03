@@ -242,7 +242,7 @@ pub fn solve_5(map: MonolithMap) -> Vec<Tile> {
         loop {
             if start.elapsed().as_secs() > 60 || current_best.load(Ordering::Relaxed) == 0 {
                 println!("Stopping solver.");
-                exit_flag.store(true, Ordering::Relaxed);
+                exit_flag.store(true, Ordering::Release);
                 break;
             }
             thread::sleep(std::time::Duration::from_millis(100));
