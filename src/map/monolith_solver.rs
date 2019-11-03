@@ -476,3 +476,82 @@ pub fn solve_6(map: MonolithMap) -> Vec<Tile> {
     results.reverse();
     results.pop().unwrap_or_default().1
 }
+
+/// Recursive Random SingleGroup Multithreaded Bounbed Bruteforce
+pub fn solve_7(map: MonolithMap) -> Vec<Tile> {
+    fn timer_thread(exit_flag: Arc<AtomicBool>, current_best: Arc<AtomicU32>) {
+        let start = Instant::now();
+        loop {
+            if start.elapsed().as_secs() > 60 || current_best.load(Ordering::Relaxed) == 0 {
+                println!("Stopping solver.");
+                exit_flag.store(true, Ordering::Release);
+                break;
+            }
+            thread::sleep(std::time::Duration::from_millis(100));
+        }
+    }
+    fn brute_solver(
+        mut map: MonolithMap,
+        result: Arc<Mutex<Vec<SolvedPath>>>,
+        current_best: Arc<AtomicU32>,
+        exit_flag: Arc<AtomicBool>,
+    ) {
+        fn random_walk(steps: &mut Vec<Tile>, map: &mut MonolithMap, rng: &mut ThreadRng) -> u32 {
+            let mut groups = map.all_groups();
+            if groups.is_empty() {
+                map.get_dead_tiles_count()
+            } else {
+                groups.shuffle(rng);
+                let first_tile = groups[0][0];
+                map.click(first_tile.0, first_tile.1);
+                steps.push(first_tile);
+                random_walk(steps, map, rng)
+            }
+        }
+        let mut steps = Vec::with_capacity(100);
+        loop {
+            if exit_flag.load(Ordering::Acquire) {
+                return;
+            }
+            let count = random_walk(&mut steps, &mut map, &mut thread_rng());
+
+            if count < current_best.load(Ordering::Acquire) {
+                result.lock().unwrap().push((count, steps.clone()));
+                current_best.store(count, Ordering::Release);
+                println!("Current best result is: {} tiles remaining.", count);
+            }
+            steps.clear();
+        }
+    };
+
+    let result = Arc::new(Mutex::new(Vec::with_capacity(100)));
+    let current_best = Arc::new(AtomicU32::new(22 * 11));
+    let exit_flag = Arc::new(AtomicBool::new(false));
+
+    let timer_handle = {
+        let exit_flag_clone = exit_flag.clone();
+        let best_clone = current_best.clone();
+        thread::spawn(|| timer_thread(exit_flag_clone, best_clone))
+    };
+    let workers: Vec<_> = (0..8)
+        .map(|_| {
+            let map = map.clone();
+            let result_clone = result.clone();
+            let best_clone = current_best.clone();
+            let exit_flag_clone = exit_flag.clone();
+            thread::spawn(|| brute_solver(map, result_clone, best_clone, exit_flag_clone))
+        })
+        .collect();
+
+    timer_handle
+        .join()
+        .expect("Failed to join on a timer thread handle.");
+    for worker in workers {
+        worker.join().expect("Failed to join on a thread handle.");
+    }
+
+    let mut results = result.lock().unwrap();
+    results.sort();
+    results.reverse();
+    results.pop().unwrap_or_default().1
+}
