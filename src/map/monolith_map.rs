@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
 use std::convert::TryInto;
 
-use super::monolith_solver;
+use super::SolvingMethods;
 
 pub type Tile = (usize, usize);
 
@@ -18,8 +18,8 @@ impl Default for MonolithMap {
 }
 
 impl MonolithMap {
-    pub fn solve(self) -> Vec<Tile> {
-        monolith_solver::solve_4(self)
+    pub fn solve(self, method: SolvingMethods) -> Vec<Tile> {
+        method.solve(self)
     }
 
     fn get(&self, x: usize, y: usize) -> u8 {
@@ -301,7 +301,7 @@ impl MonolithMap {
 
 #[cfg(test)]
 mod test {
-    use super::{MonolithMap, Tile};
+    use super::{MonolithMap, SolvingMethods, Tile};
 
     #[test]
     fn test_solve_1_step(){
@@ -320,7 +320,7 @@ mod test {
                 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], // 10
             ]
         };
-        let steps = map.solve();
+        let steps = map.solve(SolvingMethods::default());
         assert_eq!(steps.len(), 1);
         let correct_step_1: Vec<Tile> = vec![(8, 8), (8, 7), (8, 6)];
         assert!(correct_step_1.contains(&steps[0]));
@@ -343,7 +343,7 @@ mod test {
                 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], // 10
             ]
         };
-        let steps = map.solve();
+        let steps = map.solve(SolvingMethods::default());
         assert_eq!(steps.len(), 2);
         let correct_step_1: Vec<Tile> = vec![(8, 8), (9, 8)];
         assert!(correct_step_1.contains(&steps[0]));
@@ -368,7 +368,7 @@ mod test {
                 [0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], // 10
             ]
         };
-        let steps = map.solve();
+        let steps = map.solve(SolvingMethods::default());
         assert_eq!(steps.len(), 2);
         let correct_step_1: Vec<Tile> = vec![(8, 8), (9, 8)];
         assert!(correct_step_1.contains(&steps[0]));

@@ -10,7 +10,17 @@ use image::GenericImageView;
 
 use create_ahk::write_solving_steps;
 use errors::MyError;
-use map::MonolithMap;
+use map::{MonolithMap, SolvingMethods};
+use structopt::StructOpt;
+
+#[derive(StructOpt, Debug)]
+struct Args {
+    #[structopt(short, long, default_value = "Method4")]
+    method: SolvingMethods,
+
+    #[structopt(long)]
+    generate_map: bool,
+}
 
 fn get_image_files() -> Vec<PathBuf> {
     let cwd = std::env::current_dir().expect("Failed to obtain CWD.");
@@ -113,7 +123,7 @@ fn generate_monolith_map(image_data: &[u8]) -> Result<MonolithMap, MyError> {
     Ok(map)
 }
 
-fn get_monolith_map(image: &PathBuf) -> Result<MonolithMap, MyError> {
+fn get_monolith_map(image: &PathBuf, generate_map: bool) -> Result<MonolithMap, MyError> {
     let data_filepath = {
         let mut temp = image.clone();
         temp.set_extension("map");
@@ -139,15 +149,16 @@ fn get_monolith_map(image: &PathBuf) -> Result<MonolithMap, MyError> {
         };
 
         let map_data = generate_monolith_map(&image_data)?;
-
-        let data_file = std::fs::File::create(&data_filepath)?;
-        println!(
-            "Writing map data to {:?}.",
-            data_filepath
-                .file_name()
-                .unwrap_or_else(|| std::ffi::OsStr::new("???"))
-        );
-        serde_json::to_writer(data_file, &map_data)?;
+        if generate_map {
+            let data_file = std::fs::File::create(&data_filepath)?;
+            println!(
+                "Writing map data to {:?}.",
+                data_filepath
+                    .file_name()
+                    .unwrap_or_else(|| std::ffi::OsStr::new("???"))
+            );
+            serde_json::to_writer(data_file, &map_data)?;
+        }
 
         Ok(map_data)
     }
@@ -160,6 +171,7 @@ fn main() {
         return;
     }
 
+    let argument_options = Args::from_args();
     for image in found_image_files {
         println!(
             "Processing image {:?}...",
@@ -167,8 +179,8 @@ fn main() {
                 .file_name()
                 .unwrap_or_else(|| std::ffi::OsStr::new("???"))
         );
-        match get_monolith_map(&image) {
-            Ok(map) => match write_solving_steps(&image, map) {
+        match get_monolith_map(&image, argument_options.generate_map) {
+            Ok(map) => match write_solving_steps(&image, map, argument_options.method.clone()) {
                 Ok(_) => println!("Successfully finished processing file."),
                 Err(error) => println!("Failed to write solving steps. Error: {:?}", error),
             },
