@@ -255,11 +255,11 @@ pub fn solve_5(map: MonolithMap) -> Vec<Tile> {
         exit_flag: Arc<AtomicBool>,
     ) {
         fn work(
-            result: Arc<Mutex<Vec<SolvedPath>>>,
+            result: &Mutex<Vec<SolvedPath>>,
             steps: Vec<Tile>,
             map: MonolithMap,
-            current_best: Arc<AtomicU32>,
-            exit_flag: Arc<AtomicBool>,
+            current_best: &AtomicU32,
+            exit_flag: &AtomicBool,
         ) {
             if exit_flag.load(Ordering::Acquire) {
                 return;
@@ -289,13 +289,7 @@ pub fn solve_5(map: MonolithMap) -> Vec<Tile> {
                         temp.push(first_tile);
                         temp
                     };
-                    work(
-                        result.clone(),
-                        new_steps,
-                        new_map,
-                        current_best.clone(),
-                        exit_flag.clone(),
-                    );
+                    work(result, new_steps, new_map, current_best, exit_flag);
                 }
             }
         }
@@ -312,11 +306,11 @@ pub fn solve_5(map: MonolithMap) -> Vec<Tile> {
                 }
             };
             work(
-                result.clone(),
+                result.borrow(),
                 steps,
                 map,
-                current_best.clone(),
-                exit_flag.clone(),
+                current_best.borrow(),
+                exit_flag.borrow(),
             );
         }
     };
