@@ -499,11 +499,12 @@ pub fn solve_7(map: MonolithMap) -> Vec<Tile> {
             }
         }
         let mut steps = Vec::with_capacity(100);
+        let mut rng = thread_rng();
         loop {
             if exit_flag.load(Ordering::Acquire) {
                 return;
             }
-            let count = random_walk(&mut steps, &mut map, &mut thread_rng());
+            let count = random_walk(&mut steps, &mut map.clone(), &mut rng);
 
             if count < current_best.load(Ordering::Acquire) {
                 result.lock().unwrap().push((count, steps.clone()));
