@@ -13,37 +13,28 @@ use std::time::Instant;
 pub fn solve_1(map: MonolithMap) -> Vec<Tile> {
     fn random_walk(
         results: &mut Vec<SolvedPath>,
-        steps: Vec<Tile>,
-        map: MonolithMap,
+        steps: &mut Vec<Tile>,
+        map: &mut MonolithMap,
         rng: &mut ThreadRng,
-    ) -> (u32, Vec<Tile>) {
+    ) -> u32 {
         let mut groups = map.all_groups();
         if groups.is_empty() {
-            let count = map.get_dead_tiles_count();
-            (count, steps)
+            map.get_dead_tiles_count()
         } else {
             groups.shuffle(rng);
             let first_tile = groups[0][0];
-
-            let mut new_map = map.clone();
-            new_map.click(first_tile.0, first_tile.1);
-
-            let new_steps = {
-                let mut temp = steps.clone();
-                temp.push(first_tile);
-                temp
-            };
-            random_walk(results, new_steps, new_map, rng)
+            map.click(first_tile.0, first_tile.1);
+            steps.push(first_tile);
+            random_walk(results, steps, map, rng)
         }
     }
 
     let mut results: Vec<SolvedPath> = Vec::with_capacity(100);
-    let map = map.clone();
     let mut rng = thread_rng();
     let start = Instant::now();
     loop {
-        let new_map = map.clone();
-        let (count, steps) = random_walk(&mut results, Vec::new(), new_map, &mut rng);
+        let mut steps = Vec::with_capacity(100);
+        let count = random_walk(&mut results, &mut steps, &mut map.clone(), &mut rng);
         if results.is_empty() || count < results.first().unwrap().0 {
             println!("Found result with {} tiles remaining.", count);
             results.push((count, steps));
