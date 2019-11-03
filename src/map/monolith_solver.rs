@@ -481,7 +481,7 @@ pub fn solve_7(map: MonolithMap) -> Vec<Tile> {
         }
     }
     fn brute_solver(
-        mut map: MonolithMap,
+        map: MonolithMap,
         result: Arc<Mutex<Vec<SolvedPath>>>,
         current_best: Arc<AtomicU32>,
         exit_flag: Arc<AtomicBool>,
