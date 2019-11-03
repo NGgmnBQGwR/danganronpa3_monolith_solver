@@ -8,6 +8,7 @@ use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::Duration;
 use std::time::Instant;
+use std::borrow::Borrow;
 
 /// Recursive Random Singlethreaded Unbounbed Bruteforce
 pub fn solve_1(map: MonolithMap) -> Vec<Tile> {
@@ -386,11 +387,11 @@ pub fn solve_6(map: MonolithMap) -> Vec<Tile> {
         exit_flag: Arc<AtomicBool>,
     ) {
         fn work(
-            result: Arc<Mutex<Vec<SolvedPath>>>,
+            result: &Mutex<Vec<SolvedPath>>,
             steps: Vec<Tile>,
             map: MonolithMap,
-            current_best: Arc<AtomicU32>,
-            exit_flag: Arc<AtomicBool>,
+            current_best: &AtomicU32,
+            exit_flag: &AtomicBool,
             rng: &mut ThreadRng,
         ) {
             if exit_flag.load(Ordering::Acquire) {
@@ -423,11 +424,11 @@ pub fn solve_6(map: MonolithMap) -> Vec<Tile> {
                         temp
                     };
                     work(
-                        result.clone(),
+                        result,
                         new_steps,
                         new_map,
-                        current_best.clone(),
-                        exit_flag.clone(),
+                        current_best,
+                        exit_flag,
                         rng,
                     );
                 }
@@ -435,11 +436,11 @@ pub fn solve_6(map: MonolithMap) -> Vec<Tile> {
         }
 
         work(
-            result.clone(),
+            result.borrow(),
             Vec::new(),
             map,
-            current_best.clone(),
-            exit_flag.clone(),
+            current_best.borrow(),
+            exit_flag.borrow(),
             &mut thread_rng(),
         );
     };
