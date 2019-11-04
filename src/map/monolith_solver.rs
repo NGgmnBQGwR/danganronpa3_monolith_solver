@@ -546,3 +546,118 @@ pub fn solve_7(map: MonolithMap) -> Vec<Tile> {
     results.reverse();
     results.pop().unwrap_or_default().1
 }
+
+pub fn solve_8(map: MonolithMap) -> Vec<Tile> {
+    fn cluster_solver(map_queue: Arc<ArrayQueue<MonolithMap>>, result: Arc<Mutex<Vec<Tile>>>) {
+        fn work(
+            results: &mut Vec<SolvedPath>,
+            steps: Vec<Tile>,
+            map: MonolithMap,
+            current_best: &mut u32,
+        ) {
+            let groups = map.all_groups();
+            if groups.is_empty() {
+                let count = map.get_dead_tiles_count();
+
+                if count < *current_best {
+                    results.push((count, steps));
+                    *current_best = count;
+                }
+            } else {
+                for group in groups {
+                    let first_tile = group[0];
+
+                    let mut new_map = map.clone();
+                    new_map.click(first_tile.0, first_tile.1);
+                    if new_map.get_dead_tiles_count() >= *current_best {
+                        continue;
+                    }
+
+                    let new_steps = {
+                        let mut temp = steps.clone();
+                        temp.push(first_tile);
+                        temp
+                    };
+                    work(results, new_steps, new_map, current_best);
+                }
+            }
+        };
+
+        loop {
+            let map = match map_queue.pop() {
+                Ok(x) => x,
+                Err(_) => {
+                    thread::sleep(Duration::from_millis(1_000));
+                    match map_queue.pop() {
+                        Ok(x) => x,
+                        Err(_) => break,
+                    }
+                }
+            };
+            let tile_count = map.get_all_tiles_count();
+            println!(
+                "Took cluster of size {}, {} left.",
+                tile_count,
+                map_queue.len()
+            );
+
+            let mut results = Vec::with_capacity(50);
+            let mut best_result = tile_count;
+            work(&mut results, Vec::with_capacity(50), map, &mut best_result);
+            if !results.is_empty() {
+                results.sort();
+                results.reverse();
+                let (count, path) = results.pop().unwrap_or_default();
+                assert_eq!(count, best_result);
+                println!(
+                    "Best result for cluster of size {} is {} tiles remaining.",
+                    tile_count, count
+                );
+
+                {
+                    let mut result_vec = result.lock().unwrap();
+                    for step in path {
+                        result_vec.push(step);
+                    }
+                }
+            }
+        }
+    };
+
+    let map_queue = Arc::new(ArrayQueue::new(50));
+    let clusters = map.all_tile_clusters();
+    for (index, cluster) in clusters.into_iter().enumerate() {
+        let cluster_map = map.create_map_from_cluster(&cluster);
+        let all_groups = cluster_map.all_groups();
+        if all_groups.len() > 20 {
+            println!(
+                "Cluster #{} ({} tiles) has too many groups in it ({}).",
+                index,
+                cluster.len(),
+                all_groups.len()
+            );
+            return Vec::new();
+        }
+        map_queue
+            .push(cluster_map)
+            .expect("Failed to push a starting cluster map.");
+    }
+    let result = Arc::new(Mutex::new(Vec::with_capacity(100)));
+
+    let workers: Vec<_> = (0..8)
+        .map(|_| {
+            let q1 = map_queue.clone();
+            let q2 = result.clone();
+            thread::spawn(|| cluster_solver(q1, q2))
+        })
+        .collect();
+
+    for worker in workers {
+        worker.join().expect("Failed to join on a thread handle.");
+    }
+
+    Arc::try_unwrap(result)
+        .expect("Arc had several owners.")
+        .into_inner()
+        .expect("Mutex was poisoned.")
+}
