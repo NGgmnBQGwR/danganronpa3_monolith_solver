@@ -678,7 +678,11 @@ pub fn solve_9(map: MonolithMap) -> Vec<Tile> {
         let mut buffer = String::new();
         file.read_to_string(&mut buffer)
             .expect("Failed to read from file.");
-        serde_json::from_str::<Vec<(usize, usize)>>(&buffer).expect("Failed to parse JSON.")
+        let mut tiles =
+            serde_json::from_str::<Vec<(usize, usize)>>(&buffer).expect("Failed to parse JSON.");
+        tiles.sort();
+        tiles.dedup();
+        tiles
     }
 
     fn get_map_diff_score(current_map: &MonolithMap, target_tiles: &[Tile]) -> u32 {
