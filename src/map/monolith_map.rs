@@ -229,7 +229,7 @@ impl MonolithMap {
         }
     }
 
-    fn all_tile_clusters(&self) -> Vec<Vec<Tile>> {
+    pub fn all_tile_clusters(&self) -> Vec<Vec<Tile>> {
         let mut clusters = Vec::with_capacity(30);
         let mut visited = HashSet::with_capacity(200);
         let max_y = self.0.len();
@@ -249,7 +249,7 @@ impl MonolithMap {
         clusters
     }
 
-    fn create_map_from_cluster(&self, cluster: &[Tile]) -> MonolithMap {
+    pub fn create_map_from_cluster(&self, cluster: &[Tile]) -> MonolithMap {
         let mut new_map = MonolithMap::default();
         for tile in cluster {
             let group = self.get(tile.0, tile.1);
