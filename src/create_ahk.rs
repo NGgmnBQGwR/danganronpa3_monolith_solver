@@ -107,6 +107,10 @@ pub fn write_solving_steps(
 
     println!("Solving the map (this may take a while).");
     let steps = map.solve(solve_method);
+    if steps.is_empty() {
+        println!("Solver returned 0-step solution.");
+        return Ok(());
+    }
 
     let solver_file = std::fs::File::create(&solver_filepath)?;
 
