@@ -97,12 +97,11 @@ pub fn write_solving_steps(
     };
     if solver_filepath.exists() {
         println!(
-            "File with solving steps {:?} already exists.",
+            "Existing file with solving steps {:?} will be overwritten.",
             solver_filepath
                 .file_name()
                 .unwrap_or_else(|| std::ffi::OsStr::new("???"))
         );
-        return Ok(());
     }
 
     println!("Solving the map (this may take a while).");
