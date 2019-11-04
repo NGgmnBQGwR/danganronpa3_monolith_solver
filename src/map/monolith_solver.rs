@@ -4,6 +4,8 @@ use rand::rngs::ThreadRng;
 use rand::seq::SliceRandom;
 use rand::thread_rng;
 use std::borrow::Borrow;
+use std::convert::TryInto;
+use std::io::Read;
 use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
 use std::sync::{Arc, Mutex};
 use std::thread;
@@ -667,4 +669,126 @@ pub fn solve_8(map: MonolithMap) -> Vec<Tile> {
         .expect("Arc had several owners.")
         .into_inner()
         .expect("Mutex was poisoned.")
+}
+
+/// Find Solutions Where That Spot Is Empty
+pub fn solve_9(map: MonolithMap) -> Vec<Tile> {
+    fn load_target_tiles() -> Vec<Tile> {
+        let mut file = std::fs::File::open("tiles.txt").expect("Failed to open 'tiles.txt'.");
+        let mut buffer = String::new();
+        file.read_to_string(&mut buffer)
+            .expect("Failed to read from file.");
+        serde_json::from_str::<Vec<(usize, usize)>>(&buffer).expect("Failed to parse JSON.")
+    }
+
+    fn get_map_diff_score(current_map: &MonolithMap, target_tiles: &[Tile]) -> u32 {
+        let mut score = 0;
+        for tile in target_tiles {
+            if current_map.get(tile.0, tile.1) == 0 {
+                score += 1;
+            }
+        }
+        score
+    }
+
+    fn timer_thread(exit_flag: Arc<AtomicBool>) {
+        let start = Instant::now();
+        loop {
+            if exit_flag.load(Ordering::Acquire) {
+                break;
+            }
+            if start.elapsed().as_secs() > 60 {
+                println!("Stopping solver.");
+                exit_flag.store(true, Ordering::Release);
+                break;
+            }
+            thread::sleep(std::time::Duration::from_millis(100));
+        }
+    }
+
+    fn random_walk(
+        steps: &mut Vec<Tile>,
+        map: &mut MonolithMap,
+        target: &[Tile],
+        rng: &mut ThreadRng,
+    ) -> u32 {
+        let mut groups = map.all_groups();
+        if groups.is_empty() {
+            get_map_diff_score(map, target)
+        } else {
+            groups.shuffle(rng);
+            let first_tile = groups[0][0];
+            map.click(first_tile.0, first_tile.1);
+            steps.push(first_tile);
+            random_walk(steps, map, target, rng)
+        }
+    }
+
+    fn brute_solver(
+        map: MonolithMap,
+        target: Vec<Tile>,
+        result: Arc<Mutex<Vec<SolvedPath>>>,
+        current_best: Arc<AtomicU32>,
+        exit_flag: Arc<AtomicBool>,
+    ) {
+        let mut steps = Vec::with_capacity(100);
+        let mut rng = thread_rng();
+        loop {
+            if exit_flag.load(Ordering::Acquire) {
+                return;
+            }
+            let count = random_walk(&mut steps, &mut map.clone(), &target, &mut rng);
+
+            if count > current_best.load(Ordering::Acquire) {
+                let target_len: u32 = target
+                    .len()
+                    .try_into()
+                    .expect("Failed to convert usize to u32");
+                result.lock().unwrap().push((count, steps.clone()));
+                current_best.store(count, Ordering::Release);
+                println!(
+                    "Current best result is: {}/{} tiles freed.",
+                    count, target_len
+                );
+                if count == target_len {
+                    exit_flag.store(true, Ordering::Release);
+                    break;
+                }
+            }
+            steps.clear();
+        }
+    };
+
+    let exit_flag = Arc::new(AtomicBool::new(false));
+
+    let timer_handle = {
+        let exit_flag_clone = exit_flag.clone();
+        thread::spawn(|| timer_thread(exit_flag_clone))
+    };
+
+    let target_tiles = load_target_tiles();
+    let result = Arc::new(Mutex::new(Vec::with_capacity(100)));
+    let current_best = Arc::new(AtomicU32::new(0));
+
+    let workers: Vec<_> = (0..8)
+        .map(|_| {
+            let map = map.clone();
+            let target = target_tiles.clone();
+            let result_clone = result.clone();
+            let best_clone = current_best.clone();
+            let exit_flag_clone = exit_flag.clone();
+            thread::spawn(|| brute_solver(map, target, result_clone, best_clone, exit_flag_clone))
+        })
+        .collect();
+
+    timer_handle
+        .join()
+        .expect("Failed to join on a timer thread handle.");
+    for worker in workers {
+        worker.join().expect("Failed to join on a thread handle.");
+    }
+
+    let mut results = result.lock().unwrap();
+    results.sort();
+    results.pop().unwrap_or_default().1
 }

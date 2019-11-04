@@ -12,6 +12,7 @@ pub enum SolvingMethods {
     Method6,
     Method7,
     Method8,
+    Method9,
 }
 
 impl SolvingMethods {
@@ -29,6 +30,7 @@ impl SolvingMethods {
             SolvingMethods::Method6 => monolith_solver::solve_6(map),
             SolvingMethods::Method7 => monolith_solver::solve_7(map),
             SolvingMethods::Method8 => monolith_solver::solve_8(map),
+            SolvingMethods::Method9 => monolith_solver::solve_9(map),
         }
     }
 }
@@ -46,6 +48,7 @@ impl FromStr for SolvingMethods {
             "Method6" => Ok(Self::Method6),
             "Method7" => Ok(Self::Method7),
             "Method8" => Ok(Self::Method8),
+            "Method9" => Ok(Self::Method9),
             _ => Err(format!("Unknown solving method '{}'", s)),
         }
     }
