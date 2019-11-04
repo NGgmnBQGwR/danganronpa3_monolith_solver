@@ -630,6 +630,11 @@ pub fn solve_8(map: MonolithMap) -> Vec<Tile> {
     for (index, cluster) in clusters.into_iter().enumerate() {
         let cluster_map = map.create_map_from_cluster(&cluster);
         let all_groups = cluster_map.all_groups();
+
+        if all_groups.is_empty() {
+            continue;
+        }
+
         if all_groups.len() >= 12 {
             println!(
                 "Cluster #{} ({} tiles) has too many groups in it ({}).",
@@ -639,6 +644,7 @@ pub fn solve_8(map: MonolithMap) -> Vec<Tile> {
             );
             return Vec::new();
         }
+
         map_queue
             .push(cluster_map)
             .expect("Failed to push a starting cluster map.");
