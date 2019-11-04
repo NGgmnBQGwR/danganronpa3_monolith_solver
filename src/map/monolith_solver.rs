@@ -596,8 +596,9 @@ pub fn solve_8(map: MonolithMap) -> Vec<Tile> {
             };
             let tile_count = map.get_all_tiles_count();
             println!(
-                "Took cluster of size {}, {} left.",
+                "Took cluster ({} tiles, {} groups), {} left.",
                 tile_count,
+                map.all_groups().len(),
                 map_queue.len()
             );
 
@@ -610,7 +611,7 @@ pub fn solve_8(map: MonolithMap) -> Vec<Tile> {
                 let (count, path) = results.pop().unwrap_or_default();
                 assert_eq!(count, best_result);
                 println!(
-                    "Best result for cluster of size {} is {} tiles remaining.",
+                    "Best result for cluster ({} tiles) is {} tiles remaining.",
                     tile_count, count
                 );
 
