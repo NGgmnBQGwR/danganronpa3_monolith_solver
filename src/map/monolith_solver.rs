@@ -629,7 +629,7 @@ pub fn solve_8(map: MonolithMap) -> Vec<Tile> {
     for (index, cluster) in clusters.into_iter().enumerate() {
         let cluster_map = map.create_map_from_cluster(&cluster);
         let all_groups = cluster_map.all_groups();
-        if all_groups.len() > 20 {
+        if all_groups.len() >= 12 {
             println!(
                 "Cluster #{} ({} tiles) has too many groups in it ({}).",
                 index,
