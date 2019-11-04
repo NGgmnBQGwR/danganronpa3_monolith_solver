@@ -22,7 +22,7 @@ impl MonolithMap {
         method.solve(self)
     }
 
-    fn get(&self, x: usize, y: usize) -> u8 {
+    pub fn get(&self, x: usize, y: usize) -> u8 {
         self.0[y][x]
     }
 
