@@ -273,6 +273,21 @@ impl MonolithMap {
         result
     }
 
+    pub fn get_all_tiles_count(&self) -> u32 {
+        let max_y = self.0.len();
+        let max_x = self.0[0].len();
+        let mut result = 0;
+
+        for x in 0..max_x {
+            for y in 0..max_y {
+                if self.get(x, y) != 0 {
+                    result += 1
+                }
+            }
+        }
+        result
+    }
+
     fn get_single_tiles(&self) -> Vec<Tile> {
         let max_y = self.0.len();
         let max_x = self.0[0].len();
@@ -858,7 +873,7 @@ mod test {
     }
 
     #[test]
-    fn test_get_all_tiles_count(){
+    fn test_get_all_tiles(){
         let map = MonolithMap{
             0: [// 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
                 [3,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,1], // 0
@@ -876,6 +891,28 @@ mod test {
         };
         let all_tiles = map.get_all_tiles();
         assert_eq!(all_tiles.len(), 17);
+    }
+
+    #[test]
+    fn test_get_all_tiles_count(){
+        let map = MonolithMap{
+            0: [// 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+                [3,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,1], // 0
+                [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3], // 1
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], // 2
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], // 3
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], // 4
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], // 5
+                [0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0], // 6
+                [0,0,0,0,0,0,0,0,0,0,2,2,2,0,0,0,0,0,0,0,0,0], // 7
+                [3,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0], // 8
+                [2,1,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1], // 9
+                [0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1], // 10
+            ]
+        };
+
+        let tiles_count = map.get_all_tiles_count();
+        assert_eq!(tiles_count, 19);
     }
 
     #[test]
