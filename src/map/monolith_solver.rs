@@ -9,8 +9,7 @@ use std::io::Read;
 use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
 use std::sync::{Arc, Mutex};
 use std::thread;
-use std::time::Duration;
-use std::time::Instant;
+use std::time::{Duration, Instant};
 
 /// Recursive Random Singlethreaded Unbounbed Bruteforce
 pub fn solve_1(map: MonolithMap) -> Vec<Tile> {
