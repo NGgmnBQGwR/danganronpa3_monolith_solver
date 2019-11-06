@@ -844,3 +844,155 @@ pub fn solve_10(map: MonolithMap) -> Vec<Tile> {
     walk(&mut steps, &mut map.clone());
     steps
 }
+
+// Cluster-Based Recusive Depth-First SingleThreaded Solver
+pub fn solve_11(map: MonolithMap) -> Vec<Tile> {
+    fn worker_thread(
+        job_queue: Arc<ArrayQueue<(Tile, MonolithMap)>>,
+        results: Arc<Mutex<Vec<SolvedPath>>>,
+        current_best: Arc<AtomicU32>,
+        exit_flag: Arc<AtomicBool>,
+    ) {
+        let mut local_results = Vec::with_capacity(100);
+        loop {
+            if exit_flag.load(Ordering::Acquire) {
+                return;
+            }
+
+            let (first_step, map) = match job_queue.pop() {
+                Ok(x) => x,
+                Err(_) => {
+                    thread::sleep(Duration::from_millis(1_000));
+                    match job_queue.pop() {
+                        Ok(xx) => xx,
+                        Err(_) => return,
+                    }
+                }
+            };
+
+            println!("Took map job, {} left.", job_queue.len());
+
+            let mut local_best = current_best.load(Ordering::Acquire);
+            let steps = {
+                let mut steps = Vec::with_capacity(50);
+                steps.push(first_step);
+                steps
+            };
+
+            solve_map(&mut local_results, &mut local_best, steps, map);
+            if !local_results.is_empty() {
+                local_results.sort();
+                local_results.reverse();
+                let (best_count, best_steps) = local_results.pop().unwrap();
+                if best_count < current_best.load(Ordering::Acquire) {
+                    current_best.store(best_count, Ordering::Release);
+                    results.lock().unwrap().push((best_count, best_steps));
+                    println!("Current best result is: {} tiles remaining.", best_count);
+                    if best_count == 0 {
+                        exit_flag.store(true, Ordering::Release);
+                    }
+                }
+                local_results.clear();
+            }
+        }
+    }
+    fn solve_map(
+        results: &mut Vec<SolvedPath>,
+        current_best: &mut u32,
+        steps: Vec<Tile>,
+        map: MonolithMap,
+    ) {
+        if !map.has_any_group() {
+            let count = map.get_dead_tiles_count();
+            if count < *current_best {
+                *current_best = count;
+                results.push((count, steps));
+            }
+        } else {
+            let clusters = map.all_tile_clusters();
+            if clusters.len() > 1 {
+                let mut new_map = map.clone();
+                let mut new_steps = steps.clone();
+                for cluster in clusters {
+                    let cluster_map = map.create_map_from_cluster(&cluster);
+                    let mut cluster_results = Vec::with_capacity(100);
+                    let mut cluster_best = cluster_map.get_all_tiles_count();
+
+                    solve_map(
+                        &mut cluster_results,
+                        &mut cluster_best,
+                        Vec::with_capacity(50),
+                        cluster_map,
+                    );
+
+                    if !cluster_results.is_empty() {
+                        cluster_results.sort();
+                        cluster_results.reverse();
+                        let (_, best_cluster_steps) = cluster_results.pop().unwrap();
+                        for step in best_cluster_steps {
+                            new_map.click(step.0, step.1);
+                            new_steps.push(step);
+                        }
+                    }
+                }
+                solve_map(results, current_best, new_steps, new_map);
+            } else {
+                for group in map.all_groups() {
+                    let first_tile = group[0];
+                    let mut new_map = map.clone();
+                    new_map.click(first_tile.0, first_tile.1);
+
+                    let count = new_map.get_dead_tiles_count();
+                    if count >= *current_best {
+                        continue;
+                    }
+
+                    let new_steps = {
+                        let mut temp = steps.clone();
+                        temp.push(first_tile);
+                        temp
+                    };
+                    solve_map(results, current_best, new_steps, new_map);
+                }
+            }
+        }
+    };
+
+    let job_queue = Arc::new(ArrayQueue::new(100));
+    let all_groups = map.all_groups();
+    println!("Adding {} jobs to the map queue.", all_groups.len(),);
+
+    for group in all_groups {
+        let mut new_map = map.clone();
+        let first_tile = group[0];
+        new_map.click(first_tile.0, first_tile.1);
+        job_queue
+            .push((first_tile, new_map))
+            .expect("Failed to push a starting map.");
+    }
+
+    let current_best = Arc::new(AtomicU32::new(22 * 11));
+    let result = Arc::new(Mutex::new(Vec::with_capacity(100)));
+    let exit_flag = Arc::new(AtomicBool::new(false));
+
+    let workers: Vec<_> = (0..8)
+        .map(|_| {
+            let job_queue_clone = job_queue.clone();
+            let result_clone = result.clone();
+            let best_clone = current_best.clone();
+            let exit_flag_clone = exit_flag.clone();
+            thread::spawn(|| {
+                worker_thread(job_queue_clone, result_clone, best_clone, exit_flag_clone)
+            })
+        })
+        .collect();
+
+    for worker in workers {
+        worker.join().expect("Failed to join on a thread handle.");
+    }
+
+    let mut result_vector = result.lock().unwrap();
+    result_vector.sort();
+    result_vector.reverse();
+    result_vector.pop().unwrap_or_default().1
+}
