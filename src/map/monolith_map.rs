@@ -134,16 +134,16 @@ impl MonolithMap {
     }
 
     pub fn all_groups(&self) -> Vec<Vec<Tile>> {
-        let mut groups = Vec::with_capacity(30);
-        let mut visited = HashSet::with_capacity(200);
+        let mut groups = Vec::with_capacity(50);
+        let mut visited = [[false; MAX_Y]; MAX_X];
 
         for x in 0..MAX_X {
             for y in 0..MAX_Y {
-                if self.get(x, y) != 0 && !visited.contains(&(x, y)) {
+                if self.get(x, y) != 0 && !visited[x][y] {
                     let group = self.get_group(x, y);
                     if !group.is_empty() {
-                        for (x, y) in group.iter() {
-                            visited.insert((*x, *y));
+                        for (x, y) in &group {
+                            visited[*x][*y] = true;
                         }
                         groups.push(group);
                     }
