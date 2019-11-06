@@ -210,41 +210,46 @@ impl MonolithMap {
     }
 
     pub fn get_tile_cluster(&self, x: usize, y: usize) -> Vec<Tile> {
-        let mut group = HashSet::with_capacity(10);
+        let mut group = Vec::with_capacity(50);
+        let mut visited = [[false; MAX_Y]; MAX_X];
 
         if self.get(x, y) == 0 {
             return Vec::new();
         }
 
-        let mut todo = Vec::with_capacity(10);
+        let mut todo = Vec::with_capacity(50);
         todo.push((x, y));
-        group.insert((x, y));
+        group.push((x, y));
+        visited[x][y] = true;
 
         while let Some(tile) = todo.pop() {
             let x = tile.0;
             let y = tile.1;
             // above
-            if y > 0 && self.get(x, y - 1) != 0 && !group.contains(&(x, y - 1)) {
+            if y > 0 && self.get(x, y - 1) != 0 && !visited[x][y - 1] {
                 todo.push((x, y - 1));
-                group.insert((x, y - 1));
+                group.push((x, y - 1));
+                visited[x][y - 1] = true;
             }
             // below
-            if y < MAX_Y - 1 && self.get(x, y + 1) != 0 && !group.contains(&(x, y + 1)) {
+            if y < MAX_Y - 1 && self.get(x, y + 1) != 0 && !visited[x][y + 1] {
                 todo.push((x, y + 1));
-                group.insert((x, y + 1));
+                group.push((x, y + 1));
+                visited[x][y + 1] = true;
             }
             // left
-            if x > 0 && self.get(x - 1, y) != 0 && !group.contains(&(x - 1, y)) {
+            if x > 0 && self.get(x - 1, y) != 0 && !visited[x - 1][y] {
                 todo.push((x - 1, y));
-                group.insert((x - 1, y));
+                group.push((x - 1, y));
+                visited[x - 1][y] = true;
             }
             // right
-            if x < MAX_X - 1 && self.get(x + 1, y) != 0 && !group.contains(&(x + 1, y)) {
+            if x < MAX_X - 1 && self.get(x + 1, y) != 0 && !visited[x + 1][y] {
                 todo.push((x + 1, y));
-                group.insert((x + 1, y));
+                group.push((x + 1, y));
+                visited[x + 1][y] = true;
             }
         }
-        let group: Vec<Tile> = group.into_iter().collect();
         if group.len() == 1 {
             Vec::new()
         } else {
