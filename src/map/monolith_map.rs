@@ -16,7 +16,9 @@ pub struct MonolithMap(pub [[u8; MAX_X]; MAX_Y]);
 
 impl Default for MonolithMap {
     fn default() -> Self {
-        MonolithMap { 0: [[0; MAX_X]; MAX_Y] }
+        MonolithMap {
+            0: [[0; MAX_X]; MAX_Y],
+        }
     }
 }
 
