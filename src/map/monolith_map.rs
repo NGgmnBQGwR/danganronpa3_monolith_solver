@@ -1,5 +1,4 @@
 use serde::{Deserialize, Serialize};
-use std::convert::TryInto;
 
 use super::SolvingMethods;
 
