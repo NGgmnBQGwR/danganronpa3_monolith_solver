@@ -1,16 +1,10 @@
-mod create_ahk;
-mod errors;
-mod map;
-
+use image::GenericImageView;
+use monolith_solver::create_ahk::write_solving_steps;
+use monolith_solver::errors::MyError;
+use monolith_solver::map::{MonolithMap, SolvingMethods};
 use std::convert::TryInto;
 use std::io::Read;
 use std::path::PathBuf;
-
-use image::GenericImageView;
-
-use create_ahk::write_solving_steps;
-use errors::MyError;
-use map::{MonolithMap, SolvingMethods};
 use structopt::StructOpt;
 
 #[derive(StructOpt, Debug)]
