@@ -209,7 +209,7 @@ impl MonolithMap {
         }
     }
 
-    fn get_tile_cluster(&self, x: usize, y: usize) -> Vec<Tile> {
+    pub fn get_tile_cluster(&self, x: usize, y: usize) -> Vec<Tile> {
         let mut group = HashSet::with_capacity(10);
 
         if self.get(x, y) == 0 {
