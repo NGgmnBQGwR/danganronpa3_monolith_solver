@@ -1,5 +1,4 @@
 use serde::{Deserialize, Serialize};
-use std::collections::HashSet;
 use std::convert::TryInto;
 
 use super::SolvingMethods;
@@ -334,17 +333,19 @@ impl MonolithMap {
     }
 
     pub fn get_dead_tiles_count(&self) -> u32 {
-        let mut counted = HashSet::with_capacity(100);
+        let mut visited = [[false; MAX_Y]; MAX_X];
+        let mut dead = 0;
 
         for x in 0..MAX_X {
             for y in 0..MAX_Y {
                 if self.get(x, y) != 0 {
-                    if counted.contains(&(x, y)) {
+                    if visited[x][y] {
                         continue;
                     }
 
                     if !self.has_neighbors(x, y) {
-                        counted.insert((x, y));
+                        visited[x][y] = true;
+                        dead += 1;
                         continue;
                     }
 
@@ -358,13 +359,14 @@ impl MonolithMap {
                     }
                     if dead_cluster {
                         for tile in tile_cluster {
-                            counted.insert((tile.0, tile.1));
+                            visited[tile.0][tile.1] = true;
+                            dead += 1;
                         }
                     }
                 }
             }
         }
-        counted.len().try_into().unwrap()
+        dead
     }
 }
 
