@@ -47,12 +47,12 @@ impl MonolithMap {
         for tile in &group {
             self.set(tile.0, tile.1, 0);
         }
-        let mut advanced = HashSet::with_capacity(50);
+        let mut advanced = [[false; MAX_Y]; MAX_X];
         for tile in group {
             for neighbor in self.get_neighbors(tile.0, tile.1) {
-                if !advanced.contains(&(neighbor.0, neighbor.1)) {
+                if !advanced[neighbor.0][neighbor.1] {
                     self.advance(neighbor.0, neighbor.1);
-                    advanced.insert((neighbor.0, neighbor.1));
+                    advanced[neighbor.0][neighbor.1] = true;
                 }
             }
         }
