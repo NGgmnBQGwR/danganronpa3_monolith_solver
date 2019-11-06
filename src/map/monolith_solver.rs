@@ -796,3 +796,52 @@ pub fn solve_9(map: MonolithMap) -> Vec<Tile> {
     results.sort();
     results.pop().unwrap_or_default().1
 }
+
+/// Using special function to find best groups to click
+pub fn solve_10(map: MonolithMap) -> Vec<Tile> {
+    fn get_group_score(original_map: &MonolithMap, group: &[Tile]) -> f64 {
+        let mut new_map = original_map.clone();
+        let first_tile = group[0];
+        new_map.click(first_tile.0, first_tile.1);
+        let new_groups = new_map.all_groups();
+        let groups_total_size = new_groups.iter().fold(0, |sum, e| sum + e.len());
+        // new_groups.len() as f64 // ?
+        // groups_total_size as f64 // ?
+        groups_total_size as f64 / new_groups.len() as f64 // ?
+    }
+    fn cmp_f64(a: f64, b: f64) -> std::cmp::Ordering {
+        if a < b {
+            return std::cmp::Ordering::Less;
+        } else if a > b {
+            return std::cmp::Ordering::Greater;
+        }
+        std::cmp::Ordering::Equal
+    }
+    fn walk(steps: &mut Vec<Tile>, map: &mut MonolithMap) {
+        let groups = map.all_groups();
+        if groups.is_empty() {
+        } else if groups.len() == 1 {
+            let first_tile = groups[0][0];
+            map.click(first_tile.0, first_tile.1);
+            steps.push(first_tile);
+            walk(steps, map)
+        } else {
+            let best_group = {
+                let mut best_result = groups
+                    .into_iter()
+                    .map(|x| (get_group_score(map, &x), x))
+                    .collect::<Vec<_>>();
+                best_result.sort_by(|a, b| cmp_f64(a.0, b.0));
+                best_result.pop().unwrap().1
+            };
+            let first_tile = best_group[0];
+            map.click(first_tile.0, first_tile.1);
+            steps.push(first_tile);
+            walk(steps, map)
+        }
+    }
+
+    let mut steps = Vec::with_capacity(100);
+    walk(&mut steps, &mut map.clone());
+    steps
+}
