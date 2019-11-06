@@ -266,14 +266,14 @@ impl MonolithMap {
 
     pub fn all_tile_clusters(&self) -> Vec<Vec<Tile>> {
         let mut clusters = Vec::with_capacity(30);
-        let mut visited = HashSet::with_capacity(200);
+        let mut visited = [[false; MAX_Y]; MAX_X];
 
         for x in 0..MAX_X {
             for y in 0..MAX_Y {
-                if self.get(x, y) != 0 && self.has_neighbors(x, y) && !visited.contains(&(x, y)) {
+                if self.get(x, y) != 0 && self.has_neighbors(x, y) && !visited[x][y] {
                     let cluster = self.get_tile_cluster(x, y);
                     for (x, y) in cluster.iter() {
-                        visited.insert((*x, *y));
+                        visited[*x][*y] = true;
                     }
                     clusters.push(cluster);
                 }
