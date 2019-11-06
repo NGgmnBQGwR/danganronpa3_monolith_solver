@@ -8,12 +8,15 @@ pub type Tile = (usize, usize);
 
 pub type SolvedPath = (u32, Vec<Tile>);
 
+const MAX_X: usize = 22;
+const MAX_Y: usize = 11;
+
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
-pub struct MonolithMap(pub [[u8; 22]; 11]);
+pub struct MonolithMap(pub [[u8; MAX_X]; MAX_Y]);
 
 impl Default for MonolithMap {
     fn default() -> Self {
-        MonolithMap { 0: [[0; 22]; 11] }
+        MonolithMap { 0: [[0; MAX_X]; MAX_Y] }
     }
 }
 
@@ -67,27 +70,22 @@ impl MonolithMap {
     }
 
     fn has_neighbors(&self, x: usize, y: usize) -> bool {
-        let max_y = self.0.len() - 1;
-        let max_x = self.0[0].len() - 1;
-
         self.get(x, y) != 0
             && ((y > 0 && self.get(x, y - 1) != 0)
-                || (y < max_y && self.get(x, y + 1) != 0)
+                || (y < MAX_Y - 1 && self.get(x, y + 1) != 0)
                 || (x > 0 && self.get(x - 1, y) != 0)
-                || (x < max_x && self.get(x + 1, y) != 0))
+                || (x < MAX_X - 1 && self.get(x + 1, y) != 0))
     }
 
     fn get_neighbors(&self, x: usize, y: usize) -> Vec<Tile> {
         let mut neighbors = Vec::with_capacity(4);
-        let max_y = self.0.len() - 1;
-        let max_x = self.0[0].len() - 1;
 
         // above
         if y > 0 && self.get(x, y - 1) != 0 {
             neighbors.push((x, y - 1));
         }
         // below
-        if y < max_y && self.get(x, y + 1) != 0 {
+        if y < MAX_Y - 1 && self.get(x, y + 1) != 0 {
             neighbors.push((x, y + 1));
         }
         // left
@@ -95,20 +93,17 @@ impl MonolithMap {
             neighbors.push((x - 1, y));
         }
         // right
-        if x < max_x && self.get(x + 1, y) != 0 {
+        if x < MAX_X - 1 && self.get(x + 1, y) != 0 {
             neighbors.push((x + 1, y));
         }
         neighbors
     }
 
     pub fn has_any_group(&self) -> bool {
-        let max_y = self.0.len();
-        let max_x = self.0[0].len();
-
-        for y in 0..max_y {
-            for x in 0..max_x {
+        for y in 0..MAX_Y {
+            for x in 0..MAX_X {
                 let next_x = x + 1;
-                if next_x == max_x {
+                if next_x == MAX_X {
                     continue;
                 }
                 if self.get(x, y) == 0 || self.get(next_x, y) == 0 {
@@ -120,10 +115,10 @@ impl MonolithMap {
                 }
             }
         }
-        for y in 0..max_y {
-            for x in 0..max_x {
+        for y in 0..MAX_Y {
+            for x in 0..MAX_X {
                 let next_y = y + 1;
-                if next_y == max_y {
+                if next_y == MAX_Y {
                     continue;
                 }
                 if self.get(x, y) == 0 || self.get(x, next_y) == 0 {
@@ -141,11 +136,9 @@ impl MonolithMap {
     pub fn all_groups(&self) -> Vec<Vec<Tile>> {
         let mut groups = Vec::with_capacity(30);
         let mut visited = HashSet::with_capacity(200);
-        let max_y = self.0.len();
-        let max_x = self.0[0].len();
 
-        for x in 0..max_x {
-            for y in 0..max_y {
+        for x in 0..MAX_X {
+            for y in 0..MAX_Y {
                 if self.get(x, y) != 0 && !visited.contains(&(x, y)) {
                     let group = self.get_group(x, y);
                     if !group.is_empty() {
@@ -166,13 +159,10 @@ impl MonolithMap {
             return false;
         }
 
-        let max_y = self.0.len() - 1;
-        let max_x = self.0[0].len() - 1;
-
         (y > 0 && self.get(x, y - 1) == group_type)
-            || (y < max_y && self.get(x, y + 1) == group_type)
+            || (y < MAX_Y - 1 && self.get(x, y + 1) == group_type)
             || (x > 0 && self.get(x - 1, y) == group_type)
-            || (x < max_x && self.get(x + 1, y) == group_type)
+            || (x < MAX_X - 1 && self.get(x + 1, y) == group_type)
     }
 
     fn get_group(&self, x: usize, y: usize) -> Vec<Tile> {
@@ -186,8 +176,6 @@ impl MonolithMap {
         let mut todo = Vec::with_capacity(10);
         todo.push((x, y));
         group.insert((x, y));
-        let max_y = self.0.len() - 1;
-        let max_x = self.0[0].len() - 1;
 
         while let Some(tile) = todo.pop() {
             let x = tile.0;
@@ -198,7 +186,7 @@ impl MonolithMap {
                 group.insert((x, y - 1));
             }
             // below
-            if y < max_y && self.get(x, y + 1) == group_type && !group.contains(&(x, y + 1)) {
+            if y < MAX_Y - 1 && self.get(x, y + 1) == group_type && !group.contains(&(x, y + 1)) {
                 todo.push((x, y + 1));
                 group.insert((x, y + 1));
             }
@@ -208,7 +196,7 @@ impl MonolithMap {
                 group.insert((x - 1, y));
             }
             // right
-            if x < max_x && self.get(x + 1, y) == group_type && !group.contains(&(x + 1, y)) {
+            if x < MAX_X - 1 && self.get(x + 1, y) == group_type && !group.contains(&(x + 1, y)) {
                 todo.push((x + 1, y));
                 group.insert((x + 1, y));
             }
@@ -231,8 +219,6 @@ impl MonolithMap {
         let mut todo = Vec::with_capacity(10);
         todo.push((x, y));
         group.insert((x, y));
-        let max_y = self.0.len() - 1;
-        let max_x = self.0[0].len() - 1;
 
         while let Some(tile) = todo.pop() {
             let x = tile.0;
@@ -243,7 +229,7 @@ impl MonolithMap {
                 group.insert((x, y - 1));
             }
             // below
-            if y < max_y && self.get(x, y + 1) != 0 && !group.contains(&(x, y + 1)) {
+            if y < MAX_Y - 1 && self.get(x, y + 1) != 0 && !group.contains(&(x, y + 1)) {
                 todo.push((x, y + 1));
                 group.insert((x, y + 1));
             }
@@ -253,7 +239,7 @@ impl MonolithMap {
                 group.insert((x - 1, y));
             }
             // right
-            if x < max_x && self.get(x + 1, y) != 0 && !group.contains(&(x + 1, y)) {
+            if x < MAX_X - 1 && self.get(x + 1, y) != 0 && !group.contains(&(x + 1, y)) {
                 todo.push((x + 1, y));
                 group.insert((x + 1, y));
             }
@@ -269,11 +255,9 @@ impl MonolithMap {
     pub fn all_tile_clusters(&self) -> Vec<Vec<Tile>> {
         let mut clusters = Vec::with_capacity(30);
         let mut visited = HashSet::with_capacity(200);
-        let max_y = self.0.len();
-        let max_x = self.0[0].len();
 
-        for x in 0..max_x {
-            for y in 0..max_y {
+        for x in 0..MAX_X {
+            for y in 0..MAX_Y {
                 if self.get(x, y) != 0 && self.has_neighbors(x, y) && !visited.contains(&(x, y)) {
                     let cluster = self.get_tile_cluster(x, y);
                     for (x, y) in cluster.iter() {
@@ -296,12 +280,10 @@ impl MonolithMap {
     }
 
     fn get_all_tiles(&self) -> Vec<Tile> {
-        let max_y = self.0.len();
-        let max_x = self.0[0].len();
         let mut result = Vec::with_capacity(264);
 
-        for x in 0..max_x {
-            for y in 0..max_y {
+        for x in 0..MAX_X {
+            for y in 0..MAX_Y {
                 if self.get(x, y) != 0 {
                     result.push((x, y));
                 }
@@ -311,12 +293,10 @@ impl MonolithMap {
     }
 
     pub fn get_all_tiles_count(&self) -> u32 {
-        let max_y = self.0.len();
-        let max_x = self.0[0].len();
         let mut result = 0;
 
-        for x in 0..max_x {
-            for y in 0..max_y {
+        for x in 0..MAX_X {
+            for y in 0..MAX_Y {
                 if self.get(x, y) != 0 {
                     result += 1
                 }
@@ -326,12 +306,10 @@ impl MonolithMap {
     }
 
     fn get_single_tiles(&self) -> Vec<Tile> {
-        let max_y = self.0.len();
-        let max_x = self.0[0].len();
         let mut result = Vec::with_capacity(30);
 
-        for x in 0..max_x {
-            for y in 0..max_y {
+        for x in 0..MAX_X {
+            for y in 0..MAX_Y {
                 if self.get(x, y) != 0 {
                     let group = self.get_group(x, y);
                     if group.is_empty() {
@@ -344,12 +322,10 @@ impl MonolithMap {
     }
 
     pub fn get_dead_tiles_count(&self) -> u32 {
-        let max_y = self.0.len();
-        let max_x = self.0[0].len();
         let mut counted = HashSet::with_capacity(100);
 
-        for x in 0..max_x {
-            for y in 0..max_y {
+        for x in 0..MAX_X {
+            for y in 0..MAX_Y {
                 if self.get(x, y) != 0 {
                     if counted.contains(&(x, y)) {
                         continue;
